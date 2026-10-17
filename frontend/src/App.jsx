@@ -2,8 +2,10 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "./AuthContext.jsx";
 import Home from "./pages/Home.jsx";
 import Login from "./pages/Login.jsx";
+import MyScooters from "./pages/MyScooters.jsx";
 import MySightings from "./pages/MySightings.jsx";
 import RegisterScooter from "./pages/RegisterScooter.jsx";
+import ScooterDetail from "./pages/ScooterDetail.jsx";
 import SubmitSighting from "./pages/SubmitSighting.jsx";
 
 // Wrap a page in <RequireLogin> to send logged-out users to /login.
@@ -19,7 +21,10 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/" element={<RequireLogin><Home /></RequireLogin>} />
+      <Route path="/my-scooters" element={<RequireLogin><MyScooters /></RequireLogin>} />
       <Route path="/register-scooter" element={<RequireLogin><RegisterScooter /></RequireLogin>} />
+      <Route path="/scooters/:id" element={<RequireLogin><ScooterDetail /></RequireLogin>} />
+      <Route path="/scooters/:id/edit" element={<RequireLogin><RegisterScooter /></RequireLogin>} />
       <Route path="/submit-sighting" element={<RequireLogin><SubmitSighting /></RequireLogin>} />
       <Route path="/my-sightings" element={<RequireLogin><MySightings /></RequireLogin>} />
       <Route path="*" element={<Navigate to="/" replace />} />
