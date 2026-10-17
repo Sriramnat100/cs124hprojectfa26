@@ -136,6 +136,35 @@
 .sg-item-photos img { width: 110px; height: 82px; object-fit: cover; border-radius: 8px; flex: none; }
 .sg-item-text p { margin: 4px 0; }
 
+/* View sightings (map + list) */
+.sg-viewpage { max-width: 1200px; }
+.sg-legend { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--muted); }
+.sg-dot { width: 12px; height: 12px; border-radius: 50%; background: #d83a3a; display: inline-block; margin-left: 6px; }
+.sg-dot.mine { background: #2f6fdb; }
+.sg-pin.mine span { background: #2f6fdb; }
+.sg-filters { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: flex-end; margin-bottom: 14px; }
+.sg-filters label { display: flex; flex-direction: column; gap: 3px; font-size: 0.8rem; font-weight: 700; color: var(--muted); }
+.sg-filters select { padding: 8px 10px; font-size: 0.95rem; min-width: 140px; }
+.sg-filters .link { padding-bottom: 9px; }
+.sg-viewgrid { display: grid; grid-template-columns: 1fr 340px; gap: 16px; align-items: start; }
+.sg-viewmap { height: 600px; border-radius: 14px; border: 1px solid var(--line); z-index: 0; }
+.sg-viewlist { max-height: 600px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 4px; }
+.sg-viewcount { margin: 0; font-size: 0.9rem; }
+.sg-viewitem { text-align: left; background: var(--card); color: var(--ink); border: 1.5px solid var(--line); border-left: 5px solid #d83a3a; border-radius: 12px; padding: 10px 12px; font-weight: 400; font-size: 0.92rem; }
+.sg-viewitem.mine { border-left-color: #2f6fdb; }
+.sg-viewitem:hover { border-color: var(--accent); }
+.sg-viewitem.on { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
+.sg-summary { display: flex; flex-direction: column; gap: 3px; font-size: 0.9rem; line-height: 1.4; }
+.sg-summary-photos { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 4px; }
+.sg-summary-photos img { width: 78px; height: 58px; object-fit: cover; border-radius: 6px; flex: none; }
+.sg-summary-when { color: var(--muted); font-size: 0.85rem; }
+.sg-mine-tag { align-self: flex-start; background: #e6eefc; color: #1f4fa8; font-size: 0.72rem; font-weight: 700; padding: 1px 8px; border-radius: 999px; }
+/* Leaflet popups are always white, so keep their text dark even in dark mode. */
+.sg-viewmap .leaflet-popup-content { margin: 12px; color: #1d1d1f; }
+.sg-viewmap .leaflet-popup-content .muted,
+.sg-viewmap .leaflet-popup-content .sg-summary-when { color: #5c5f66; }
+.sg-viewmap .leaflet-popup-content .sg-tagpill { background: #f2f0ea; }
+
 @media (prefers-reduced-motion: reduce) {
   .sg-check, .sg-plus, .sg-confetti { animation: none; }
   .sg-confetti { display: none; }
@@ -154,4 +183,9 @@
   .sg-brands { grid-template-columns: repeat(3, 1fr); }
   .sg-slots { grid-template-columns: 1fr 1fr; }
   .sg-item { grid-template-columns: 1fr; }
+  .sg-viewgrid { grid-template-columns: 1fr; }
+  .sg-viewmap { height: 380px; }
+  .sg-viewlist { max-height: none; overflow: visible; padding-right: 0; }
+  .sg-filters label { flex: 1 1 140px; }
+  .sg-filters select { min-width: 0; width: 100%; }
 }

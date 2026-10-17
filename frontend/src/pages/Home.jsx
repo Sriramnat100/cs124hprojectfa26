@@ -34,6 +34,11 @@ export default function Home() {
           <b>Report a sighting</b>
           <small>Photograph a scooter you saw on campus · +10 points</small>
         </Link>
+        <Link to="/view-sightings" className="tile">
+          <span className="emoji">🗺️</span>
+          <b>View sightings</b>
+          <small>Map of scooters spotted around campus</small>
+        </Link>
         <Link to="/my-sightings" className="tile">
           <span className="emoji">📋</span>
           <b>My sightings</b>

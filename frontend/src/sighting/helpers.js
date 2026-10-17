@@ -69,6 +69,17 @@ export function formatWhen(iso) {
   return sameDay ? `Today ${time}` : `${d.toLocaleDateString([], { month: "short", day: "numeric" })}, ${time}`;
 }
 
+// "5 min ago", "3 h ago", "2 days ago"
+export function timeAgo(iso) {
+  const minutes = Math.max(0, Math.round((Date.now() - new Date(iso)) / 60000));
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes} min ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours} h ago`;
+  const days = Math.round(hours / 24);
+  return `${days} day${days === 1 ? "" : "s"} ago`;
+}
+
 // localStorage can be full, blocked, or hold old data, so never let it crash the page.
 export function readJSON(key) {
   try {
