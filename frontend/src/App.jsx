@@ -7,6 +7,7 @@ import MySightings from "./pages/MySightings.jsx";
 import RegisterScooter from "./pages/RegisterScooter.jsx";
 import ScooterDetail from "./pages/ScooterDetail.jsx";
 import SubmitSighting from "./pages/SubmitSighting.jsx";
+import ViewSightings from "./pages/ViewSightings.jsx";
 
 // Wrap a page in <RequireLogin> to send logged-out users to /login.
 function RequireLogin({ children }) {
@@ -27,6 +28,7 @@ export default function App() {
       <Route path="/scooters/:id/edit" element={<RequireLogin><RegisterScooter /></RequireLogin>} />
       <Route path="/submit-sighting" element={<RequireLogin><SubmitSighting /></RequireLogin>} />
       <Route path="/my-sightings" element={<RequireLogin><MySightings /></RequireLogin>} />
+      <Route path="/view-sightings" element={<RequireLogin><ViewSightings /></RequireLogin>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

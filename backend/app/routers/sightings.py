@@ -182,6 +182,31 @@ def my_sightings(user=Depends(get_current_user), db: sqlite3.Connection = Depend
     return [to_dict(db, row) for row in rows]
 
 
+MAP_LIMIT = 500  # newest first; plenty for campus, and keeps the map fast
+
+
+@router.get("/map")
+def map_sightings(days: int | None = None, user=Depends(get_current_user), db: sqlite3.Connection = Depends(get_db)):
+    """Everyone's sightings for the View sightings map. Who reported them is never sent;
+    `mine` only tells the logged-in user which ones are their own."""
+    if days is not None and not 1 <= days <= 365:
+        raise HTTPException(400, "days must be between 1 and 365")
+    sql, args = "SELECT * FROM sightings", []
+    if days is not None:
+        since = datetime.now(timezone.utc) - timedelta(days=days)
+        sql += " WHERE seen_at >= ?"  # seen_at is always stored as UTC ISO text, so text comparison works
+        args.append(since.isoformat(timespec="seconds"))
+    sql += " ORDER BY seen_at DESC, id DESC LIMIT ?"
+    args.append(MAP_LIMIT)
+
+    sightings = []
+    for row in db.execute(sql, args).fetchall():
+        sighting = to_dict(db, row)
+        sighting["mine"] = sighting.pop("reporter_id") == user["id"]
+        sightings.append(sighting)
+    return sightings
+
+
 @router.get("/points")
 def my_points(user=Depends(get_current_user), db: sqlite3.Connection = Depends(get_db)):
     return {"points": points_for(db, user["id"])}
