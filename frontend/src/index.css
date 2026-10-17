@@ -79,3 +79,5 @@ button.link { background: none; color: var(--accent); padding: 0; font-weight: 5
 .tile:hover { border-color: var(--accent); }
 .tile .emoji { font-size: 2rem; }
 .tile small { color: var(--muted); }
+
+.points { background: #fff4c8; color: #7a5b00; font-weight: 700; padding: 2px 10px; border-radius: 999px; text-decoration: none; white-space: nowrap; }
