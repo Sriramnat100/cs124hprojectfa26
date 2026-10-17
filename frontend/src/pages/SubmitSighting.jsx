@@ -19,12 +19,13 @@ function emptyForm() {
   return {
     slots: GUIDED_SLOTS.map((s) => ({ ...s, dataUrl: null })),
     loc: null, landmark: null, locSource: null, accuracy: null, seenTime: "",
-    brand: null, color: null, features: [], situation: null, notes: "",
+    brand: null, color: null, features: [], situation: null, notes: "", serialNumber: "",
   };
 }
 
 const photoCount = (form) => form.slots.filter((s) => s.dataUrl).length;
-const hasData = (form) => photoCount(form) > 0 || form.loc || form.brand || form.color || form.features.length > 0 || form.notes;
+const hasData = (form) =>
+  photoCount(form) > 0 || form.loc || form.brand || form.color || form.features.length > 0 || form.notes || form.serialNumber;
 
 function draftSummary(draft) {
   const n = photoCount(draft.form);

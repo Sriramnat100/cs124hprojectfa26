@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 
 from ..auth import get_current_user
-from ..db import get_db, run_schema
+from ..db import connect, get_db, run_schema
 
 router = APIRouter(prefix="/sightings", tags=["sightings"])
 
@@ -22,6 +22,7 @@ MIN_PHOTOS = 2
 MAX_PHOTOS = 5
 MAX_PHOTO_BYTES = 8 * 1024 * 1024  # the browser shrinks photos first, so real ones are far smaller
 MAX_NOTES = 200
+MAX_SERIAL = 40
 POINTS_PER_SIGHTING = 10
 
 # Keep these lists in sync with frontend/src/sighting/constants.js.
@@ -46,6 +47,7 @@ def init_tables():
             features    TEXT NOT NULL DEFAULT '[]',  -- JSON list, e.g. ["sticker", "basket"]
             situation   TEXT,
             notes       TEXT,
+            serial_number TEXT,  -- if the spotter could read it; stored uppercase like scooters.serial_number
             created_at  TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
         );
         CREATE TABLE IF NOT EXISTS sighting_photos (
@@ -56,6 +58,20 @@ def init_tables():
             position    INTEGER NOT NULL
         );
     """)
+    add_missing_columns()
+
+
+def add_missing_columns():
+    """CREATE TABLE IF NOT EXISTS won't change a table that already exists, so databases
+    made before a column was added get it here. Safe to run on every startup."""
+    conn = connect()
+    try:
+        existing = {row["name"] for row in conn.execute("PRAGMA table_info(sightings)")}
+        if "serial_number" not in existing:
+            conn.execute("ALTER TABLE sightings ADD COLUMN serial_number TEXT")
+            conn.commit()
+    finally:
+        conn.close()
 
 
 def points_for(db, user_id):
@@ -117,6 +133,7 @@ async def create_sighting(
     features: str = Form("[]"),
     situation: str = Form(""),
     notes: str = Form(""),
+    serial_number: str = Form(""),
     user=Depends(get_current_user),
     db: sqlite3.Connection = Depends(get_db),
 ):
@@ -135,6 +152,9 @@ async def create_sighting(
     notes = notes.strip()
     if len(notes) > MAX_NOTES:
         raise HTTPException(400, f"Notes can be at most {MAX_NOTES} characters")
+    serial = serial_number.strip().upper() or None  # same format as scooters.serial_number
+    if serial and len(serial) > MAX_SERIAL:
+        raise HTTPException(400, f"Serial number can be at most {MAX_SERIAL} characters")
 
     # Read and check every photo before saving anything.
     images = []
@@ -147,13 +167,14 @@ async def create_sighting(
         images.append(data)
 
     cur = db.execute(
-        """INSERT INTO sightings (reporter_id, lat, lng, landmark, seen_at, brand, color, features, situation, notes)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        """INSERT INTO sightings (reporter_id, lat, lng, landmark, seen_at, brand, color, features, situation, notes, serial_number)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (
             user["id"], lat, lng, landmark.strip()[:60] or None,
             parse_seen_at(seen_at).isoformat(timespec="seconds"),
             pick(brand, BRANDS, "brand"), pick(color, COLORS, "color"),
             json.dumps(sorted(set(feature_list))), pick(situation, SITUATIONS, "situation"), notes or None,
+            serial,
         ),
     )
     sighting_id = cur.lastrowid
@@ -203,6 +224,8 @@ def map_sightings(days: int | None = None, user=Depends(get_current_user), db: s
     for row in db.execute(sql, args).fetchall():
         sighting = to_dict(db, row)
         sighting["mine"] = sighting.pop("reporter_id") == user["id"]
+        if not sighting["mine"]:
+            sighting.pop("serial_number", None)  # only the spotter and matching need it, not the whole campus
         sightings.append(sighting)
     return sightings
 

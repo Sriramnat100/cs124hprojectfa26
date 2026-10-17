@@ -22,6 +22,7 @@ export default function SightingSummary({ sighting: s, showPhotos = true }) {
           {s.situation && <span className="sg-tagpill">{labelFor(SITUATIONS, s.situation)}</span>}
         </div>
       )}
+      {s.serial_number && <div>🔢 Serial: <b>{s.serial_number}</b></div>}
       {s.notes && <div className="muted">"{s.notes}"</div>}
     </div>
   );

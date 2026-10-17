@@ -42,6 +42,7 @@ export default function ReviewStep({ form, onEdit, onBack, onSubmitted }) {
       body.append("features", JSON.stringify(form.features));
       body.append("situation", form.situation ?? "");
       body.append("notes", form.notes.trim());
+      body.append("serial_number", (form.serialNumber ?? "").trim());
       onSubmitted(await api("/sightings", { method: "POST", body }));
     } catch (err) {
       setError(err.message);
@@ -96,6 +97,7 @@ export default function ReviewStep({ form, onEdit, onBack, onSubmitted }) {
               {form.features.map((f) => <span key={f} className="sg-tagpill">{labelFor(FEATURES, f)}</span>)}
               {form.situation && <span className="sg-tagpill">{labelFor(SITUATIONS, form.situation)}</span>}
             </div>
+            {form.serialNumber?.trim() && <p>🔢 Serial: <b>{form.serialNumber.trim().toUpperCase()}</b></p>}
             {form.notes.trim() && <p className="muted">"{form.notes.trim()}"</p>}
           </section>
         </div>

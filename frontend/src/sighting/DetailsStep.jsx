@@ -1,4 +1,4 @@
-import { BRANDS, COLORS, FEATURES, MAX_NOTES, SITUATIONS } from "./constants.js";
+import { BRANDS, COLORS, FEATURES, MAX_NOTES, MAX_SERIAL, SITUATIONS } from "./constants.js";
 
 export default function DetailsStep({ form, update, onNext, onBack }) {
   // Clicking a selected option again unselects it, because every detail is optional.
@@ -64,6 +64,20 @@ export default function DetailsStep({ form, update, onNext, onBack }) {
               ))}
             </div>
           </div>
+
+          <label className="sg-field sg-wide">
+            <span className="sg-label">Serial number <small className="muted">· only if you can read it</small></span>
+            <input
+              value={form.serialNumber}
+              maxLength={MAX_SERIAL}
+              placeholder="Usually under the deck or on the stem"
+              autoComplete="off"
+              autoCapitalize="characters"
+              spellCheck={false}
+              onChange={(e) => update({ serialNumber: e.target.value })}
+            />
+            <small className="muted">The strongest clue there is: a matching serial number finds the owner right away.</small>
+          </label>
 
           <label className="sg-field sg-wide">
             <span className="sg-label">Notes <small className="muted">· e.g. "duck sticker on the stem"</small></span>
