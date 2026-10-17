@@ -14,6 +14,12 @@ from pydantic import BaseModel
 
 from ..auth import get_current_user
 from ..db import get_db, run_schema
+from .sightings import BRANDS as SIGHTING_BRANDS, COLORS as SIGHTING_COLORS
+
+# Same lists as sightings, so matching can compare them exactly.
+# "unsure" is only for spotters: owners know their own scooter.
+BRANDS = SIGHTING_BRANDS - {"unsure"}
+COLORS = SIGHTING_COLORS - {"unsure"}
 
 router = APIRouter(prefix="/scooters", tags=["scooters"])
 
@@ -57,10 +63,10 @@ def clean_details(brand, model, color, serial_number, marks):
     """Trim everything and store brand/color lowercase so matching can compare them exactly."""
     brand = brand.strip().lower()
     color = color.strip().lower()
-    if not brand:
-        raise HTTPException(400, "Please pick a brand")
-    if not color:
-        raise HTTPException(400, "Please pick a color")
+    if brand not in BRANDS:
+        raise HTTPException(400, "Please pick a brand from the list")
+    if color not in COLORS:
+        raise HTTPException(400, "Please pick a color from the list")
     serial = (serial_number or "").strip().upper() or None
     return brand, model.strip(), color, serial, marks.strip()
 
