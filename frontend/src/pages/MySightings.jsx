@@ -45,6 +45,7 @@ export default function MySightings() {
                 {s.features.map((f) => <span key={f} className="sg-tagpill">{labelFor(FEATURES, f)}</span>)}
                 {s.situation && <span className="sg-tagpill">{labelFor(SITUATIONS, s.situation)}</span>}
               </div>
+              {s.serial_number && <p>🔢 Serial: <b>{s.serial_number}</b></p>}
               {s.notes && <p className="muted">"{s.notes}"</p>}
             </div>
           </article>

@@ -5,6 +5,7 @@
 export const MIN_PHOTOS = 2;
 export const MAX_PHOTOS = 5;
 export const MAX_NOTES = 200;
+export const MAX_SERIAL = 40;
 
 // The first photo boxes tell people what to photograph. Extra boxes can be added up to MAX_PHOTOS.
 export const GUIDED_SLOTS = [
