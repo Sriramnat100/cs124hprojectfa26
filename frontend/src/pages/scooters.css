@@ -1,0 +1,98 @@
+/* Styles for Feature 1 (register a scooter) pages. Kept here so index.css stays shared. */
+
+.optional { color: var(--muted); font-weight: 400; font-size: 0.85rem; }
+.hint { margin: 2px 0 8px; font-size: 0.9rem; }
+
+.button {
+  display: inline-block;
+  text-align: center;
+  font-weight: 600;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: white;
+  text-decoration: none;
+}
+.button.small { padding: 6px 12px; font-size: 0.9rem; }
+.secondary { background: var(--card); color: var(--ink); border: 1px solid var(--line); }
+.danger { background: #c62828; }
+
+/* Photo picker and gallery */
+.photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.photo-grid.detail { grid-template-columns: repeat(2, 1fr); margin: 16px 0; }
+.photo {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--card);
+}
+.photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.photo .remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  font-size: 0.8rem;
+}
+.photo.add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-style: dashed;
+  color: var(--accent);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* My scooters list */
+.scooter-list { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+.scooter-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+  color: var(--ink);
+  text-decoration: none;
+}
+.scooter-row:hover { border-color: var(--accent); }
+.scooter-row img { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; }
+.scooter-row div { flex: 1; display: flex; flex-direction: column; }
+
+.badge {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.badge.stolen { background: #c62828; border-color: #c62828; color: white; }
+
+.empty { text-align: center; padding: 40px 0; }
+.empty .emoji { font-size: 3rem; }
+
+/* Scooter detail */
+.details { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; margin: 0 0 20px; }
+.details dt { color: var(--muted); }
+.details dd { margin: 0; overflow-wrap: anywhere; }
+.actions { display: flex; flex-direction: column; gap: 10px; }
+.confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid #c62828;
+  border-radius: 12px;
+  background: var(--card);
+}
+.confirm p { margin: 0 0 4px; font-weight: 600; }

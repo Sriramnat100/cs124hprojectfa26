@@ -24,10 +24,10 @@ export default function Home() {
       </p>
 
       <div className="tiles">
-        <Link to="/register-scooter" className="tile">
+        <Link to="/my-scooters" className="tile">
           <span className="emoji">🛴</span>
-          <b>Register my scooter</b>
-          <small>Add your scooter so it can be found if it's stolen</small>
+          <b>My scooters</b>
+          <small>Register your scooter so it can be found if it's stolen</small>
         </Link>
         <Link to="/submit-sighting" className="tile">
           <span className="emoji">📸</span>
