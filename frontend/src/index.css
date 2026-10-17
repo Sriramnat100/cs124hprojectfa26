@@ -1,0 +1,81 @@
+:root {
+  --bg: #f7f6f2;
+  --card: #ffffff;
+  --ink: #1d1d1f;
+  --muted: #6b6f75;
+  --line: #dcd9cf;
+  --accent: #e84a27; /* Illinois orange */
+  --error: #c23b3b;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #17181a;
+    --card: #222326;
+    --ink: #ececec;
+    --muted: #a3a6ab;
+    --line: #3a3c40;
+    --error: #f08080;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 17px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+a { color: var(--accent); }
+
+.page { padding: 32px 16px; }
+.narrow { max-width: 480px; margin: 0 auto; }
+.muted { color: var(--muted); }
+.error { color: var(--error); margin: 0; }
+
+.topbar { display: flex; justify-content: space-between; align-items: center; }
+.topbar h1 { margin: 0; }
+
+.form { display: flex; flex-direction: column; gap: 14px; margin: 20px 0; }
+.form label { display: flex; flex-direction: column; gap: 4px; font-weight: 600; font-size: 0.95rem; }
+
+input, select, textarea {
+  font: inherit;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--card);
+  color: var(--ink);
+}
+
+button {
+  font: inherit;
+  font-weight: 600;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+}
+button:disabled { opacity: 0.6; cursor: default; }
+button.link { background: none; color: var(--accent); padding: 0; font-weight: 500; }
+
+.tiles { display: flex; flex-direction: column; gap: 14px; margin-top: 24px; }
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+  color: var(--ink);
+  text-decoration: none;
+}
+.tile:hover { border-color: var(--accent); }
+.tile .emoji { font-size: 2rem; }
+.tile small { color: var(--muted); }

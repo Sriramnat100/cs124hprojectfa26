@@ -1,0 +1,14 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+.venv/
+
+# Local database and uploaded photos (each person has their own)
+backend/scootertrace.db
+backend/uploads/
+
+# Frontend
+node_modules/
+dist/
