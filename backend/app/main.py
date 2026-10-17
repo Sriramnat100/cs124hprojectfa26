@@ -1,13 +1,13 @@
 from fastapi import FastAPI
 
 from . import auth
-from .routers import scooters, sightings
+from .routers import matches, scooters, sightings
 
 app = FastAPI(title="ScooterTrace")
 
 # Each module creates its own tables and registers its own endpoints,
 # so the two features never need to edit this file.
-for module in (auth, scooters, sightings):
+for module in (auth, scooters, sightings, matches):
     module.init_tables()
     app.include_router(module.router)
 

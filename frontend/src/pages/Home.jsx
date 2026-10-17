@@ -44,6 +44,11 @@ export default function Home() {
           <b>My sightings</b>
           <small>See what you've reported{points !== null ? ` · ${points / 10} so far` : ""}</small>
         </Link>
+        <Link to="/matches" className="tile">
+          <span className="emoji">🔎</span>
+          <b>Possible matches</b>
+          <small>Sightings ranked against stolen scooters (draft)</small>
+        </Link>
       </div>
     </main>
   );

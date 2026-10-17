@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "./AuthContext.jsx";
 import Home from "./pages/Home.jsx";
 import Login from "./pages/Login.jsx";
+import Matches from "./pages/Matches.jsx";
 import MyScooters from "./pages/MyScooters.jsx";
 import MySightings from "./pages/MySightings.jsx";
 import RegisterScooter from "./pages/RegisterScooter.jsx";
@@ -29,6 +30,7 @@ export default function App() {
       <Route path="/submit-sighting" element={<RequireLogin><SubmitSighting /></RequireLogin>} />
       <Route path="/my-sightings" element={<RequireLogin><MySightings /></RequireLogin>} />
       <Route path="/view-sightings" element={<RequireLogin><ViewSightings /></RequireLogin>} />
+      <Route path="/matches" element={<RequireLogin><Matches /></RequireLogin>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
