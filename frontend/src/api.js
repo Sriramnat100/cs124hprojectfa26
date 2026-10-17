@@ -28,6 +28,10 @@ export async function api(path, { method = "GET", body } = {}) {
 
   const res = await fetch(`/api${path}`, { method, headers, body: payload });
   const data = await res.json().catch(() => null);
+  if (!res.ok && data === null && res.status >= 500) {
+    // Vite answers with an empty 500 when the backend isn't running.
+    throw new Error("Can't reach the backend. Is uvicorn running in another terminal?");
+  }
   if (!res.ok) throw new Error(data?.detail ?? `Request failed (${res.status})`);
   return data;
 }

@@ -76,15 +76,21 @@ def signup(creds: Credentials, db: sqlite3.Connection = Depends(get_db)):
 
 @router.post("/login")
 def login(creds: Credentials, db: sqlite3.Connection = Depends(get_db)):
-    email = creds.email.strip().lower()
-    row = db.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
-    if row is None or not secrets.compare_digest(
-        row["password_hash"], hash_password(creds.password, row["salt"])
-    ):
-        raise HTTPException(401, "Wrong email or password")
+    # TEMPORARY: accepts any email and any password. If the email is new,
+    # an account is created for it. Password checking is turned off.
+    email = creds.email.strip().lower() or "guest"
+    row = db.execute("SELECT id FROM users WHERE email = ?", (email,)).fetchone()
+    if row is None:
+        salt = secrets.token_hex(16)
+        user_id = db.execute(
+            "INSERT INTO users (email, password_hash, salt) VALUES (?, ?, ?)",
+            (email, hash_password(creds.password, salt), salt),
+        ).lastrowid
+    else:
+        user_id = row["id"]
 
-    token = start_session(db, row["id"])
-    return {"token": token, "user": {"id": row["id"], "email": row["email"]}}
+    token = start_session(db, user_id)
+    return {"token": token, "user": {"id": user_id, "email": email}}
 
 
 def get_token(authorization: str | None = Header(None)):

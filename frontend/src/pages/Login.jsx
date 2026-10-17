@@ -2,10 +2,10 @@ import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext.jsx";
 
+// TEMPORARY: any email and password work. The backend creates the account if it's new.
 export default function Login() {
-  const { user, login, signup } = useAuth();
+  const { user, login } = useAuth();
   const navigate = useNavigate();
-  const [isSignup, setIsSignup] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -18,7 +18,7 @@ export default function Login() {
     setError("");
     setBusy(true);
     try {
-      await (isSignup ? signup(email, password) : login(email, password));
+      await login(email, password);
       navigate("/");
     } catch (err) {
       setError(err.message);
@@ -30,26 +30,20 @@ export default function Login() {
   return (
     <main className="page narrow">
       <h1>🛴 ScooterTrace</h1>
-      <p className="muted">{isSignup ? "Create an account" : "Log in to continue"}</p>
+      <p className="muted">Type anything to log in</p>
 
       <form onSubmit={handleSubmit} className="form">
         <label>
-          Illinois email
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-            placeholder="netid@illinois.edu" required />
+          Email
+          <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="netid@illinois.edu" />
         </label>
         <label>
           Password
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-            minLength={isSignup ? 8 : undefined} required />
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
         </label>
         {error && <p className="error">{error}</p>}
-        <button type="submit" disabled={busy}>{isSignup ? "Sign up" : "Log in"}</button>
+        <button type="submit" disabled={busy}>Log in</button>
       </form>
-
-      <button className="link" onClick={() => { setIsSignup(!isSignup); setError(""); }}>
-        {isSignup ? "Already have an account? Log in" : "New here? Sign up"}
-      </button>
     </main>
   );
 }
