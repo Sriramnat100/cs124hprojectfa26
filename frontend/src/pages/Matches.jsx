@@ -6,43 +6,41 @@ import { COLORS } from "../sighting/constants.js";
 import "./scooters.css";
 import "./matches.css";
 
-// Feature 3 (draft): every stolen scooter with the sightings ranked by how likely they are to be it.
+// Feature 3 (draft): your stolen scooters, each with the sightings ranked by how likely they are to be it.
 // Scoring lives in backend/app/matching.py.
 export default function Matches() {
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
-  const [onlyMine, setOnlyMine] = useState(false);
   const [showWeak, setShowWeak] = useState(false);
 
   useEffect(() => {
     api("/matches").then(setData).catch((err) => setError(err.message));
   }, []);
 
-  const results = data?.results.filter((r) => !onlyMine || r.scooter.mine) ?? [];
+  const results = data?.results ?? [];
 
   return (
     <main className="page wide">
       <Link to="/">← Home</Link>
       <h1>🔎 Possible matches <span className="draft">draft</span></h1>
       <p className="muted">
-        Every stolen scooter, with sightings ranked from most to least likely.
+        Your stolen scooters, with sightings ranked from most to least likely.
         A serial number match always goes first.
       </p>
 
       <details className="how">
         <summary>How the score works</summary>
         <ul>
-          <li><b>Serial number</b> found in the spotter's notes (dashes, spaces and case ignored) → <b>100</b>, always ranked first.</li>
+          <li><b>Serial number</b> typed by the spotter or found in their notes (dashes, spaces and case ignored) → <b>100</b>, always ranked first.</li>
           <li><b>Brand</b> +25 if same, −20 if different, 0 if the spotter wasn't sure. <b>Color</b> works the same way.</li>
           <li><b>Description</b> up to +50: the owner's marks vs. the spotter's features and notes, compared word by word. Synonyms count as the same word ("decal" = "sticker", "broken" = "cracked"), and rare words like "duck" count more than common ones.</li>
           <li><b>−15</b> if it was seen before the scooter was reported stolen.</li>
           <li>Tiers: <b>strong</b> 60+, <b>possible</b> 30+, <b>weak</b> below 30.</li>
         </ul>
-        <p className="muted">Try more fake data: <code>python -m app.seed_demo</code> in <code>backend/</code>.</p>
+        <p className="muted">Try more fake data: <code>python -m app.seed_demo</code> in <code>backend/</code>, then log in as one of the demo owners it prints.</p>
       </details>
 
       <div className="filters">
-        <label><input type="checkbox" checked={onlyMine} onChange={(e) => setOnlyMine(e.target.checked)} /> Only my scooters</label>
         <label><input type="checkbox" checked={showWeak} onChange={(e) => setShowWeak(e.target.checked)} /> Show weak matches</label>
       </div>
 
@@ -50,7 +48,7 @@ export default function Matches() {
       {!data && !error && <p className="muted">Loading…</p>}
       {data && results.length === 0 && (
         <p className="muted empty">
-          No stolen scooters{onlyMine ? " of yours" : ""} yet. Mark one as stolen, or load fake data with <code>python -m app.seed_demo</code>.
+          None of your scooters are marked stolen. If one is, mark it stolen from <Link to="/my-scooters">My scooters</Link> and its likely sightings show up here.
         </p>
       )}
 
@@ -70,7 +68,7 @@ function ScooterMatches({ scooter, matches, showWeak }) {
       <header className="stolen-card">
         <Thumb photo={scooter.photos[0]} color={scooter.color} />
         <div className="stolen-info">
-          <b>{label(scooter.brand)} {scooter.model}</b> {scooter.mine && <span className="badge">yours</span>}
+          <b>{label(scooter.brand)} {scooter.model}</b>
           <small className="muted">
             {label(scooter.color)}
             {scooter.serial_number && <> · Serial {scooter.serial_number}</>}

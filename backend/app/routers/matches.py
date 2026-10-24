@@ -1,8 +1,7 @@
-"""Feature 3 (draft): rank sightings against every stolen scooter.
+"""Feature 3 (draft): rank sightings against the logged-in owner's stolen scooters.
 
-DRAFT / DEMO: this shows every stolen scooter to every logged-in user so we
-can play with the ranking. The real version should only show owners their
-own scooters' matches (and alert them).
+Owners only ever see their own scooters here. Sightings come from everyone,
+but without who reported them, like the sightings map. Alerts aren't built yet.
 """
 
 import json
@@ -27,14 +26,12 @@ def photos(db, table, key, owner_id, url_prefix):
 
 
 @router.get("")
-def all_matches(user=Depends(get_current_user), db: sqlite3.Connection = Depends(get_db)):
+def my_matches(user=Depends(get_current_user), db: sqlite3.Connection = Depends(get_db)):
     scooters = []
     for row in db.execute(
-        "SELECT s.*, u.email AS owner_email FROM scooters s JOIN users u ON u.id = s.owner_id "
-        "WHERE s.status = 'stolen' ORDER BY s.stolen_at DESC"
+        "SELECT * FROM scooters WHERE owner_id = ? AND status = 'stolen' ORDER BY stolen_at DESC", (user["id"],)
     ):
         scooter = dict(row)
-        scooter["mine"] = scooter["owner_id"] == user["id"]
         scooter["photos"] = photos(db, "scooter_photos", "scooter_id", row["id"], "/scooters/photos")
         scooters.append(scooter)
 
@@ -45,4 +42,9 @@ def all_matches(user=Depends(get_current_user), db: sqlite3.Connection = Depends
         sighting["photos"] = photos(db, "sighting_photos", "sighting_id", row["id"], "/sightings/photos")
         sightings.append(sighting)
 
-    return {"total_sightings": len(sightings), "results": rank(scooters, sightings)}
+    results = rank(scooters, sightings)
+    # Matching needed these, but owners shouldn't learn who reported a sighting,
+    # or a serial number the spotter read off some other scooter.
+    for sighting in sightings:
+        del sighting["reporter_id"], sighting["serial_number"]
+    return {"total_sightings": len(sightings), "results": results}

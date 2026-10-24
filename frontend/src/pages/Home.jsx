@@ -47,7 +47,7 @@ export default function Home() {
         <Link to="/matches" className="tile">
           <span className="emoji">🔎</span>
           <b>Possible matches</b>
-          <small>Sightings ranked against stolen scooters (draft)</small>
+          <small>Sightings that might be your stolen scooter (draft)</small>
         </Link>
       </div>
     </main>
