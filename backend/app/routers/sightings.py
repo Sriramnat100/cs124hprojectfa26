@@ -12,6 +12,7 @@ from fastapi.responses import FileResponse
 
 from ..auth import get_current_user
 from ..db import connect, get_db, run_schema
+from .points import balance
 
 router = APIRouter(prefix="/sightings", tags=["sightings"])
 
@@ -23,7 +24,6 @@ MAX_PHOTOS = 5
 MAX_PHOTO_BYTES = 8 * 1024 * 1024  # the browser shrinks photos first, so real ones are far smaller
 MAX_NOTES = 200
 MAX_SERIAL = 40
-POINTS_PER_SIGHTING = 10
 
 # Keep these lists in sync with frontend/src/sighting/constants.js.
 # Brand and color must match Feature 1's lists exactly, because matching compares them.
@@ -75,8 +75,7 @@ def add_missing_columns():
 
 
 def points_for(db, user_id):
-    count = db.execute("SELECT COUNT(*) FROM sightings WHERE reporter_id = ?", (user_id,)).fetchone()[0]
-    return count * POINTS_PER_SIGHTING
+    return balance(db, user_id)  # points you can spend; the rules live in routers/points.py
 
 
 def pick(value, allowed, field):

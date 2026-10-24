@@ -135,3 +135,13 @@ button.link:hover { transform: none; box-shadow: none; text-decoration: underlin
 .auth-eyebrow { font-size: 12.5px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: var(--accent); }
 .auth-card .form { margin-bottom: 4px; }
 .auth-card button[type="submit"] { margin-top: 4px; }
+
+/* Avatars (initials + points-shop background and frame, see cosmetics.js) */
+.av {
+  display: inline-grid; place-items: center; flex: none; border-radius: 50%;
+  font-weight: 800; letter-spacing: -0.01em; line-height: 1; user-select: none;
+}
+@property --av-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+@keyframes av-spin { to { --av-angle: 360deg; } }
+.av-spin { animation: av-spin 6s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .av-spin { animation: none; } }

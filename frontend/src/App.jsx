@@ -6,6 +6,8 @@ import Login from "./pages/Login.jsx";
 import Matches from "./pages/Matches.jsx";
 import MyScooters from "./pages/MyScooters.jsx";
 import MySightings from "./pages/MySightings.jsx";
+import Points from "./pages/Points.jsx";
+import Shop from "./pages/Shop.jsx";
 import RegisterScooter from "./pages/RegisterScooter.jsx";
 import ScooterDetail from "./pages/ScooterDetail.jsx";
 import Settings from "./pages/Settings.jsx";
@@ -38,6 +40,8 @@ export default function App() {
         <Route path="/my-sightings" element={<RequireLogin><MySightings /></RequireLogin>} />
         <Route path="/view-sightings" element={<RequireLogin><ViewSightings /></RequireLogin>} />
         <Route path="/matches" element={<RequireLogin><Matches /></RequireLogin>} />
+        <Route path="/points" element={<RequireLogin><Points /></RequireLogin>} />
+        <Route path="/points/shop" element={<RequireLogin><Shop /></RequireLogin>} />
         <Route path="/settings" element={<RequireLogin><Settings /></RequireLogin>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

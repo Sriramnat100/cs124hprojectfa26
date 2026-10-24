@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { api } from "../api.js";
 import { useAuth } from "../AuthContext.jsx";
+import { avatarClass, avatarStyle, usePoints } from "../cosmetics.js";
 import { AVATAR_COLORS, initialsFor, useSettings } from "../settings.js";
 import "./nav.css";
 
@@ -13,7 +13,7 @@ export default function NavBar() {
   const { pathname } = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [linksOpen, setLinksOpen] = useState(false);
-  const [points, setPoints] = useState(null);
+  const points = usePoints(user);
   const menuRef = useRef(null);
 
   // Close menus when the page changes, on outside clicks, and on Escape.
@@ -25,9 +25,6 @@ export default function NavBar() {
     document.addEventListener("keydown", onKey);
     return () => { document.removeEventListener("click", onClick); document.removeEventListener("keydown", onKey); };
   }, []);
-  useEffect(() => {
-    if (menuOpen && user) api("/sightings/points").then((d) => setPoints(d.points)).catch(() => {});
-  }, [menuOpen, user]);
 
   // Editing a scooter lives under My Scooter (scooter page → "Edit details"), so it stays highlighted there.
   const scooterActive = pathname === "/my-scooters" || pathname === "/register-scooter" || pathname.startsWith("/scooters/");
@@ -47,6 +44,7 @@ export default function NavBar() {
         <NavLink to="/submit-sighting" className={({ isActive }) => linkClass(isActive)}>Reporting</NavLink>
         <NavLink to="/view-sightings" className={({ isActive }) => linkClass(isActive)}>Explore Map</NavLink>
         <NavLink to="/matches" className={({ isActive }) => linkClass(isActive)}>Possible Matches</NavLink>
+        <NavLink to="/points" className={({ isActive }) => linkClass(isActive)}>Points</NavLink>
         <NavLink to="/settings" className={({ isActive }) => linkClass(isActive)}>Settings</NavLink>
       </nav>
 
@@ -58,8 +56,8 @@ export default function NavBar() {
           <>
             <button
               type="button"
-              className="nav-avatar"
-              style={{ background: AVATAR_COLORS[settings.avatarColor] ?? AVATAR_COLORS.teal }}
+              className={`nav-avatar ${avatarClass(points?.frame)}`}
+              style={avatarStyle({ background: points?.background, frame: points?.frame, baseBg: AVATAR_COLORS[settings.avatarColor] ?? AVATAR_COLORS.teal })}
               aria-label="Profile menu"
               aria-haspopup="true"
               aria-expanded={menuOpen}
@@ -71,9 +69,14 @@ export default function NavBar() {
               <div className="nav-who">
                 <b>{settings.displayName || user.email.split("@")[0]}</b>
                 <span>{user.email}</span>
-                {points !== null && <span className="points nav-points">🏆 {points} points</span>}
+                {points !== null && (
+                  <Link to="/points" className="points nav-points">
+                    🏆 {points.balance} pts{points.rank && ` · #${points.rank} this week`}
+                  </Link>
+                )}
               </div>
               <Link to="/my-sightings" role="menuitem">My sightings</Link>
+              <Link to="/points/shop" role="menuitem">Points shop</Link>
               <Link to="/settings" role="menuitem">Settings</Link>
               <button type="button" role="menuitem" className="nav-logout" onClick={async () => { await logout(); navigate("/"); }}>Log out</button>
             </div>
