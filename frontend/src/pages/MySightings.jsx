@@ -8,10 +8,12 @@ import "../sighting/sighting.css";
 // Feature 2: the sightings the logged-in user has submitted.
 export default function MySightings() {
   const [sightings, setSightings] = useState(null);
+  const [points, setPoints] = useState(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
     api("/sightings/mine").then(setSightings).catch((err) => setError(err.message));
+    api("/points/me").then((d) => setPoints(d.balance)).catch(() => {});
   }, []);
 
   return (
@@ -19,7 +21,7 @@ export default function MySightings() {
       <Link to="/">← Home</Link>
       <header className="topbar sg-title">
         <h1>📋 My sightings</h1>
-        {sightings && <span className="sg-points">🏆 {sightings.length * 10} pts</span>}
+        {points !== null && <Link to="/points" className="sg-points">🏆 {points} pts</Link>}
       </header>
 
       {error && <p className="error">{error}</p>}

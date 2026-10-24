@@ -1,6 +1,8 @@
 import { useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext.jsx";
+import Avatar from "../components/Avatar.jsx";
+import { usePoints } from "../cosmetics.js";
 import { AVATAR_COLORS, initialsFor, loadSettings, saveSettings } from "../settings.js";
 import "./settings.css";
 
@@ -10,6 +12,7 @@ export default function Settings() {
   const navigate = useNavigate();
   const [s, setS] = useState(() => loadSettings(user));
   const [saved, setSaved] = useState(false);
+  const points = usePoints(user);
   const savedTimer = useRef(0);
 
   const update = (changes) => {
@@ -35,7 +38,7 @@ export default function Settings() {
       <section className="st-card" aria-labelledby="st-profile">
         <h2 id="st-profile">Profile</h2>
         <div className="st-profile">
-          <span className="st-avatar" style={{ background: AVATAR_COLORS[s.avatarColor] }}>{initialsFor(user, s)}</span>
+          <Avatar size={72} initials={initialsFor(user, s)} baseBg={AVATAR_COLORS[s.avatarColor]} background={points?.background} frame={points?.frame} />
           <div className="st-fields">
             <label className="st-field">
               Display name
@@ -49,6 +52,9 @@ export default function Settings() {
                     className={`st-swatch ${s.avatarColor === name ? "on" : ""}`} style={{ background: bg }} onClick={() => update({ avatarColor: name })} />
                 ))}
               </div>
+              {points?.background && (
+                <small className="muted">You're wearing a background from the <Link to="/points/shop">points shop</Link>. Take it off there to use these colors.</small>
+              )}
             </div>
           </div>
         </div>

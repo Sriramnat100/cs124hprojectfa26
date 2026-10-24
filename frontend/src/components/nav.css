@@ -47,6 +47,8 @@
 .nav-who b { font-size: 14.5px; }
 .nav-who span { font-size: 12.5px; color: var(--faint); overflow-wrap: anywhere; }
 .nav-who .nav-points { align-self: flex-start; margin-top: 8px; font-size: 12.5px; color: var(--amber); }
+.nav-menu .nav-who a.nav-points { display: inline-block; width: auto; padding: 2px 10px; border-radius: 999px; font-weight: 700; color: var(--amber); background: rgba(242, 180, 90, 0.14); }
+.nav-menu .nav-who a.nav-points:hover { background: rgba(242, 180, 90, 0.24); color: var(--amber); }
 .nav-menu a, .nav-logout {
   display: block; width: 100%; text-align: left; padding: 9px 12px; border-radius: 10px;
   font-size: 14px; font-weight: 500; color: var(--muted); text-decoration: none; background: transparent; border: 0;

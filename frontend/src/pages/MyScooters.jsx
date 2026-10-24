@@ -27,7 +27,7 @@ export default function MyScooters() {
       {scooters?.length === 0 && (
         <div className="empty">
           <span className="emoji">🛴</span>
-          <p>You haven't registered a scooter yet.</p>
+          <p>You haven't registered a scooter yet. Setting one up earns you <b>20 points</b>.</p>
           <Link to="/register-scooter" className="button">Register your first scooter</Link>
         </div>
       )}
