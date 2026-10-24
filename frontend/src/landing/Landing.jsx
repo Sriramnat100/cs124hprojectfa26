@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -7,8 +7,9 @@ import { useAuth } from "../AuthContext.jsx";
 import { useSettings } from "../settings.js";
 import { label } from "../scooterOptions.js";
 import { BRANDS, LANDMARKS, labelFor } from "../sighting/constants.js";
-import { photoUrl, timeAgo } from "../sighting/helpers.js";
-import CampusMap, { KIND_COLORS } from "./CampusMap.jsx";
+import { timeAgo } from "../sighting/helpers.js";
+import LandingMap from "./LandingMap.jsx";
+import ReportPreview from "./ReportPreview.jsx";
 import { mountScooterScene } from "./scene.js";
 import "./landing.css";
 
@@ -21,33 +22,27 @@ const STORY = [
 ];
 
 // Shown to visitors who aren't logged in (live sightings need an account).
+// Same shape as /sightings/map results, so the map and popups treat them alike.
 const landmark = (name) => LANDMARKS.find((l) => l.name === name);
 const SAMPLES = [
-  ["Grainger", 0.0002, -0.0003, "Black Segway", "Locked to the bike rack"],
-  ["Union", -0.0002, 0.0004, "Red Xiaomi", "White stripe on the stem"],
-  ["Siebel", 0.0001, 0.0002, "Blue Gotrax", "Duck sticker on the deck"],
-  ["ISR", 0, -0.0004, "White Hiboy", "Green lights under the deck"],
-  ["Main Library", 0.0002, 0.0003, "Black Segway", "Phone mount on the handlebar"],
-].map(([place, dLat, dLng, title, note], i) => ({
-  id: `sample-${i}`, kind: "sample", lat: landmark(place).lat + dLat, lng: landmark(place).lng + dLng,
-  title, place: `Near ${place}`, time: "Example", note, photo: null,
+  ["Grainger", 0.0002, -0.0003, "segway", "black", ["sticker"], "Locked to the bike rack"],
+  ["Union", -0.0002, 0.0004, "xiaomi", "red", [], "White stripe on the stem"],
+  ["Siebel", 0.0001, 0.0002, "gotrax", "blue", ["sticker"], "Duck sticker on the deck"],
+  ["ISR", 0, -0.0004, "hiboy", "white", ["lights"], "Green lights under the deck"],
+  ["Main Library", 0.0002, 0.0003, "segway", "black", ["phone mount"], "Phone mount on the handlebar"],
+].map(([place, dLat, dLng, brand, color, features, notes], i) => ({
+  id: `sample-${i}`, sample: true, mine: false, lat: landmark(place).lat + dLat, lng: landmark(place).lng + dLng,
+  landmark: place, seen_at: new Date(Date.now() - (i + 1) * 47 * 60000).toISOString(),
+  brand, color, features, situation: null, notes, photos: [],
 }));
 
-function toMarker(s) {
+const KIND_COLORS = { sighting: "#D83A3A", mine: "#2F6FDB" };
+const kindOf = (s) => (s.mine ? "mine" : "sighting");
+function titleOf(s) {
   const brand = s.brand && s.brand !== "unsure" ? labelFor(BRANDS, s.brand) : "";
-  const color = s.color && s.color !== "unsure" && s.color !== "other" ? s.color[0].toUpperCase() + s.color.slice(1) : "";
-  return {
-    id: s.id, kind: s.mine ? "mine" : "sighting", lat: s.lat, lng: s.lng,
-    title: [color, brand].filter(Boolean).join(" ") || "Scooter",
-    place: s.landmark ? `Near ${s.landmark}` : "Custom spot",
-    time: timeAgo(s.seen_at), note: s.notes || (s.features.length ? s.features.join(", ") : ""),
-    photo: s.photos[0] ? photoUrl(s.photos[0].url) : null,
-  };
+  const color = s.color && !["unsure", "other"].includes(s.color) ? s.color[0].toUpperCase() + s.color.slice(1) : "";
+  return [color, brand].filter(Boolean).join(" ") || "Scooter";
 }
-
-const ScooterSketch = () => (
-  <svg viewBox="0 0 120 72" fill="none" stroke="#7F93B2" strokeWidth="3" strokeLinecap="round"><path d="M34 58l30-46h12" /><path d="M22 58h70" /><circle cx="22" cy="58" r="9" /><circle cx="94" cy="58" r="9" /></svg>
-);
 
 export default function Landing() {
   const { user } = useAuth();
@@ -59,16 +54,16 @@ export default function Landing() {
 
   const rootRef = useRef(null);
   const canvasRef = useRef(null);
-  const sectionRefs = { story: useRef(null), my: useRef(null), map: useRef(null), closing: useRef(null) };
+  const sectionRefs = { story: useRef(null), my: useRef(null), report: useRef(null), map: useRef(null), closing: useRef(null) };
   const sceneRef = useRef(null);
+  const mapRef = useRef(null);
 
   const [scooter, setScooter] = useState(undefined); // undefined = loading, null = none
   const [sightings, setSightings] = useState(null);
   const [mapActive, setMapActive] = useState(false);
-  const [selectedId, setSelectedId] = useState(null);
+  const [selection, setSelection] = useState(null); // { id } chosen in the side panel
   const [hidden, setHidden] = useState(() => new Set());
   const [query, setQuery] = useState("");
-  const [zoom, setZoom] = useState(1);
 
   // Real data when logged in.
   useEffect(() => {
@@ -78,12 +73,11 @@ export default function Landing() {
     api("/sightings/map?days=30").then(setSightings).catch(() => setSightings([]));
   }, [user]);
 
-  const markers = useMemo(() => (user ? (sightings ?? []).map(toMarker) : SAMPLES), [user, sightings]);
+  const all = useMemo(() => (user ? sightings ?? [] : SAMPLES), [user, sightings]);
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return markers.filter((m) => !hidden.has(m.kind) && (!q || `${m.title} ${m.place} ${m.note}`.toLowerCase().includes(q)));
-  }, [markers, hidden, query]);
-  const selected = markers.find((m) => m.id === selectedId) ?? null;
+    return all.filter((s) => !hidden.has(kindOf(s)) && (!q || `${titleOf(s)} ${s.landmark ?? ""} ${s.notes ?? ""} ${s.features.join(" ")}`.toLowerCase().includes(q)));
+  }, [all, hidden, query]);
 
   // 3D scene
   useEffect(() => {
@@ -96,7 +90,6 @@ export default function Landing() {
     return () => { sceneRef.current?.dispose(); sceneRef.current = null; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reducedMotion]);
-  useEffect(() => { sceneRef.current?.setMapZoom(zoom); }, [zoom]);
 
   // Scroll-linked text and UI (the scooter itself is driven by scene.js)
   useEffect(() => {
@@ -112,12 +105,13 @@ export default function Landing() {
           if (i < steps.length - 1) tl.to(step, { opacity: 0, y: -28, duration: 1 }, i * 3 + 2);
         });
         tl.to({}, { duration: 1 });
+        gsap.from(".lp-report-copy", { opacity: 0, y: 40, ease: "none", scrollTrigger: { trigger: sectionRefs.report.current, start: "top 85%", end: "top 35%", scrub: true } });
         gsap.to([".lp-map-head", ".lp-map-panel", ".lp-map-zoom"], { opacity: 1, y: 0, x: 0, stagger: 0.08, ease: "none", scrollTrigger: { trigger: sectionRefs.map.current, start: "top 35%", end: "top top", scrub: true } });
       }
       ScrollTrigger.create({ trigger: sectionRefs.my.current, start: "top 55%", end: "bottom 45%", onToggle: (s) => root.classList.toggle("lp-can-rotate", s.isActive) });
       ScrollTrigger.create({
-        trigger: sectionRefs.map.current, start: "top 15%", end: "bottom 60%",
-        onToggle: (s) => { setMapActive(s.isActive); if (!s.isActive) { setSelectedId(null); setZoom(1); } },
+        trigger: sectionRefs.map.current, start: "top 10%", end: "bottom 60%",
+        onToggle: (s) => { setMapActive(s.isActive); if (!s.isActive) setSelection(null); },
       });
     }, root);
     return () => ctx.revert();
@@ -130,34 +124,13 @@ export default function Landing() {
     ScrollTrigger.refresh();
   }, [scooter, sightings]);
 
-  // Close the popup on outside clicks.
-  useEffect(() => {
-    const close = () => setSelectedId(null);
-    document.addEventListener("click", close);
-    return () => document.removeEventListener("click", close);
-  }, []);
-
+  const onMapReady = useCallback((map) => { mapRef.current = map; }, []);
   const toggleKind = (kind) => setHidden((h) => { const n = new Set(h); n.has(kind) ? n.delete(kind) : n.add(kind); return n; });
-  const kinds = user ? [["sighting", "Sightings"], ["mine", "Yours"]] : [["sample", "Examples"]];
-
-  const popupContent = selected && (
-    <>
-      <div className="lp-popup-photo">{selected.photo ? <img src={selected.photo} alt={selected.title} /> : <ScooterSketch />}</div>
-      <b>{selected.title}</b>
-      <p>{selected.place} · {selected.time}</p>
-      {selected.note && <p>{selected.note}</p>}
-      <div className="lp-popup-foot">
-        <span className="lp-tag" style={{ color: KIND_COLORS[selected.kind], background: `${KIND_COLORS[selected.kind]}1a` }}>
-          {selected.kind === "mine" ? "You reported this" : selected.kind === "sample" ? "Example" : "Sighting"}
-        </span>
-        {user ? <Link to="/view-sightings">Open map →</Link> : <Link to="/login">Log in for live data →</Link>}
-      </div>
-    </>
-  );
+  const kinds = user ? [["sighting", "Sightings"], ["mine", "Yours"]] : [["sighting", "Examples"]];
 
   return (
     <div ref={rootRef} className={`lp-root ${reducedMotion ? "lp-reduced" : ""}`}>
-      <CampusMap markers={shown} active={mapActive} hidden={new Set()} selectedId={selectedId} onSelect={setSelectedId} popupContent={popupContent} />
+      <LandingMap sightings={shown} active={mapActive} selection={selection} loggedIn={Boolean(user)} onReady={onMapReady} />
       <canvas ref={canvasRef} className="lp-canvas" aria-label="3D electric scooter" role="img" />
 
       <main className="lp-main">
@@ -205,14 +178,26 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* 4. Campus map */}
+        {/* 4. Report a sighting */}
+        <section ref={sectionRefs.report} className="lp-report" aria-label="Report a sighting">
+          <div className="lp-wrap">
+            <div className="lp-report-copy">
+              <span className="lp-eyebrow">Report a Sighting</span>
+              <h2>Seen a scooter? Report it in 30 seconds.</h2>
+              <p className="lp-lead">Four quick steps. Try them below.</p>
+              <ReportPreview loggedIn={Boolean(user)} />
+            </div>
+          </div>
+        </section>
+
+        {/* 5. Campus map (the real Explore Map) */}
         <section ref={sectionRefs.map} className="lp-mapsec" aria-label="Explore the campus map">
           <div className="lp-mapsec-pin">
             <div className="lp-map-head lp-wrap">
               <span className="lp-eyebrow">Explore Map</span>
               <h2>The whole campus, connected.</h2>
             </div>
-            <aside className="lp-map-panel" aria-label="Map controls" onClick={(e) => e.stopPropagation()}>
+            <aside className="lp-map-panel" aria-label="Map controls">
               <label className="lp-search">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
                 <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search a building, brand or color" aria-label="Search the map" />
@@ -225,24 +210,24 @@ export default function Landing() {
                 ))}
               </div>
               <div className="lp-recent">
-                {shown.slice(0, 4).map((m) => (
-                  <button key={m.id} type="button" className={selectedId === m.id ? "on" : ""} onClick={() => setSelectedId(m.id)}>
-                    <span className="lp-dot" style={{ background: `${KIND_COLORS[m.kind]}1f` }}><i style={{ background: KIND_COLORS[m.kind] }} /></span>
-                    <span><b>{m.title}</b><span>{m.place} · {m.time}</span></span>
+                {shown.slice(0, 4).map((s) => (
+                  <button key={s.id} type="button" className={selection?.id === s.id ? "on" : ""} onClick={() => setSelection({ id: s.id })}>
+                    <span className="lp-dot" style={{ background: `${KIND_COLORS[kindOf(s)]}26` }}><i style={{ background: KIND_COLORS[kindOf(s)] }} /></span>
+                    <span><b>{titleOf(s)}</b><span>{s.landmark ? `Near ${s.landmark}` : "Custom spot"} · {timeAgo(s.seen_at)}</span></span>
                   </button>
                 ))}
                 {user && sightings && shown.length === 0 && <p className="lp-empty">No sightings match. <Link to="/submit-sighting">Report one</Link></p>}
               </div>
               <Link to={user ? "/view-sightings" : "/login"} className="lp-panel-link">{user ? "Open the full map →" : "Log in to see live sightings →"}</Link>
             </aside>
-            <div className="lp-map-zoom" role="group" aria-label="Zoom" onClick={(e) => e.stopPropagation()}>
-              <button type="button" aria-label="Zoom in" onClick={() => setZoom((z) => Math.min(1.8, z + 0.15))}>+</button>
-              <button type="button" aria-label="Zoom out" onClick={() => setZoom((z) => Math.max(0.85, z - 0.15))}>−</button>
+            <div className="lp-map-zoom" role="group" aria-label="Zoom">
+              <button type="button" aria-label="Zoom in" onClick={() => mapRef.current?.zoomIn()}>+</button>
+              <button type="button" aria-label="Zoom out" onClick={() => mapRef.current?.zoomOut()}>−</button>
             </div>
           </div>
         </section>
 
-        {/* 5. Closing */}
+        {/* 6. Closing */}
         <section ref={sectionRefs.closing} className="lp-closing" aria-label="Get started">
           <div className="lp-wrap">
             <span className="lp-eyebrow">ScooterTrace</span>

@@ -8,22 +8,27 @@
 }
 .lp-bgmap.lp-map-active { pointer-events: auto; }
 .lp-mapplane {
-  position: absolute; left: 50%; top: 50%; width: 1600px; height: 1000px; transform-origin: 50% 55%;
+  position: absolute; left: 50%; top: 50%; width: 100vw; height: 100vh; transform-origin: 50% 55%;
   transform: translate(-50%, -50%) rotateX(var(--map-tilt, 0deg)) scale(var(--map-scale, 1.35));
   opacity: var(--map-opacity, 0.32); filter: blur(var(--map-blur, 3px)) saturate(1.1);
   will-change: transform, opacity, filter;
 }
-.lp-mapplane svg { width: 100%; height: 100%; display: block; font-family: "Manrope", sans-serif; }
+.lp-leaflet { width: 100%; height: 100%; background: #0B1424; }
+.lp-bgmap:not(.lp-map-active) .leaflet-control-attribution { opacity: 0; }
+.lp-map-badge { position: absolute; right: 16px; bottom: 30px; z-index: 500; padding: 5px 12px; border-radius: 999px; background: rgba(14,22,38,0.85); border: 1px solid var(--line); color: var(--muted); font-size: 12.5px; font-weight: 600; opacity: 0; transition: opacity .3s; }
+.lp-map-active .lp-map-badge { opacity: 1; }
+.lp-popup-note { margin: 8px 0 0; font-size: 12.5px; color: var(--muted); }
+.lp-popup-note a { font-weight: 700; text-decoration: none; }
 .lp-bgmap::after {
   content: ""; position: absolute; inset: 0; pointer-events: none;
   background: radial-gradient(70% 60% at 50% 45%, transparent 0%, rgba(7,12,22,0.55) 70%, rgba(7,12,22,0.9) 100%);
   opacity: var(--vignette, 1);
 }
 .lp-canvas { position: fixed; inset: 0; z-index: 1; width: 100%; height: 100%; pointer-events: none; opacity: var(--scene-opacity, 1); }
-.lp-root.lp-can-rotate .lp-canvas { pointer-events: auto; cursor: grab; }
+.lp-root.lp-can-rotate .lp-canvas { pointer-events: auto; cursor: grab; touch-action: pan-y; } /* vertical swipes still scroll */
 .lp-root.lp-dragging .lp-canvas { cursor: grabbing; }
 
-.lp-main { position: relative; z-index: 2; }
+.lp-main { position: relative; z-index: 2; pointer-events: none; } /* clicks fall through to the canvas/map; interactive parts opt back in */
 .lp-wrap { width: min(1180px, calc(100% - 48px)); margin: 0 auto; }
 .lp-eyebrow { font-size: 12.5px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: var(--accent); }
 .lp-root h1, .lp-root h2 { margin: 0; letter-spacing: -0.03em; line-height: 1.02; font-weight: 800; }
@@ -98,7 +103,52 @@
 @keyframes lp-sway { 0%, 100% { transform: translateX(-3px); } 50% { transform: translateX(3px); } }
 .lp-root.lp-rotated .lp-rotate-hint { opacity: 0; }
 
-/* 4. Map section: the fixed map becomes the interface */
+/* 4. Report a sighting */
+.lp-report { position: relative; min-height: 120vh; display: flex; align-items: center; pointer-events: none; }
+.lp-report-copy { width: min(540px, 48vw); pointer-events: auto; }
+.lp-report-copy h2 { font-size: clamp(36px, 4.4vw, 62px); margin-top: 14px; }
+.lp-report-copy .lp-lead { margin: 16px 0 24px; }
+.lp-rp { border-radius: 24px; padding: 18px; background: var(--glass); border: 1px solid var(--line); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); box-shadow: 0 24px 60px rgba(0,0,0,0.3); }
+.lp-rp-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.lp-rp-tabs button { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 6px; border-radius: 12px; background: rgba(148,178,214,0.05); border: 1px solid transparent; color: var(--muted); font-size: 13.5px; font-weight: 700; }
+.lp-rp-tabs button span { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 11.5px; border: 1.5px solid var(--line); }
+.lp-rp-tabs button:hover:not(:disabled) { transform: none; box-shadow: none; color: var(--ink); }
+.lp-rp-tabs button.on { color: var(--ink); background: rgba(60,214,196,0.1); border-color: rgba(60,214,196,0.4); }
+.lp-rp-tabs button.on span { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.lp-rp-tabs button.done span { background: var(--success); border-color: var(--success); color: #06121F; }
+.lp-rp-body { padding: 18px 6px 6px; min-height: 370px; animation: lp-rp-in .35s ease; } /* same height for every step, so the page never jumps */
+@keyframes lp-rp-in { from { opacity: 0; transform: translateY(8px); } }
+.lp-rp-body { display: flex; flex-direction: column; }
+.lp-rp-body h3 { margin: auto 0 4px; padding-top: 16px; font-size: 19px; } /* title + text sit at the bottom on every step */
+.lp-rp-body p { margin: 0; color: var(--muted); font-size: 14.5px; }
+.lp-rp-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+.lp-rp-next { background: transparent; color: var(--accent); border: 1px solid rgba(60,214,196,0.35); padding: 10px 16px; }
+.lp-rp-next:hover:not(:disabled) { box-shadow: none; background: rgba(60,214,196,0.08); }
+.lp-rp-cta { height: 44px; padding: 0 20px; }
+.lp-rp-photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.lp-rp-slot { aspect-ratio: 4 / 3; border-radius: 14px; border: 2px dashed var(--line); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--faint); font-size: 12px; font-weight: 700; }
+.lp-rp-slot b { font-size: 22px; color: var(--muted); }
+.lp-rp-slot.filled { border: 2px solid rgba(61,214,140,0.6); background: linear-gradient(135deg, #1A2B45, #12203A); color: var(--muted); }
+.lp-rp-slot svg, .lp-rp-thumbs svg { width: 70%; height: auto; }
+.lp-rp-flip svg { transform: scaleX(-1); }
+.lp-rp-map { width: 100%; height: auto; display: block; border-radius: 12px; }
+.lp-rp-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.lp-rp-chips span { padding: 5px 11px; border-radius: 999px; font-size: 12.5px; font-weight: 600; border: 1px solid var(--line); color: var(--muted); }
+.lp-rp-chips span.on { color: var(--accent); border-color: rgba(60,214,196,0.5); background: rgba(60,214,196,0.1); }
+.lp-rp-chips .lp-rp-gps { color: var(--accent-2); border-color: rgba(125,211,252,0.4); }
+.lp-rp-details .lp-rp-chips:first-child { margin-top: 0; }
+.lp-rp-colors { display: flex; gap: 10px; margin-top: 12px; }
+.lp-rp-colors i { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--line); }
+.lp-rp-colors i.on { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(60,214,196,0.25); }
+.lp-rp-review { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center; }
+.lp-rp-thumbs { display: flex; gap: 6px; }
+.lp-rp-thumbs div { width: 64px; height: 48px; border-radius: 10px; background: linear-gradient(135deg, #1A2B45, #12203A); display: grid; place-items: center; }
+.lp-rp-summary b { display: block; font-size: 14.5px; }
+.lp-rp-summary span { font-size: 12.5px; color: var(--muted); }
+.lp-rp-submit { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-radius: 12px; background: rgba(60,214,196,0.12); border: 1px solid rgba(60,214,196,0.35); color: var(--accent); font-weight: 700; font-size: 14px; }
+.lp-rp-submit em { font-style: normal; color: var(--amber); }
+
+/* 5. Map section: the fixed map becomes the interface */
 .lp-mapsec { height: 170vh; pointer-events: none; }
 .lp-mapsec-pin { position: sticky; top: 0; height: 100vh; }
 .lp-map-head { position: absolute; left: 0; right: 0; top: calc(var(--nav-h) + 48px); text-align: center; opacity: 0; transform: translateY(20px); }
@@ -131,33 +181,8 @@
 .lp-map-zoom button:hover:not(:disabled) { background: rgba(148,178,214,0.08); color: var(--ink); transform: none; box-shadow: none; }
 .lp-map-zoom button + button { border-top: 1px solid var(--line); }
 
-.lp-marker { cursor: pointer; opacity: 0; transition: opacity .5s; outline: none; }
-.lp-map-active .lp-marker { opacity: 1; }
-.lp-pulse { transform-box: fill-box; transform-origin: center; animation: lp-pulse 2.6s ease-out infinite; }
-@keyframes lp-pulse { 0% { transform: scale(.6); opacity: .7; } 100% { transform: scale(2.4); opacity: 0; } }
-.lp-core { transition: transform .25s; transform-box: fill-box; transform-origin: center; }
-.lp-marker:hover .lp-core, .lp-marker.on .lp-core, .lp-marker:focus-visible .lp-core { transform: scale(1.35); }
-
-.lp-popup {
-  position: fixed; z-index: 30; width: 260px; padding: 14px; border-radius: 18px;
-  background: rgba(14, 22, 38, 0.94); border: 1px solid var(--line); backdrop-filter: blur(16px);
-  box-shadow: 0 24px 50px rgba(0,0,0,0.45); opacity: 0; transform: translate(-50%, calc(-100% - 18px)) scale(.96);
-  transition: opacity .2s, transform .2s; pointer-events: none;
-}
-.lp-popup.open { opacity: 1; transform: translate(-50%, calc(-100% - 22px)); pointer-events: auto; }
-.lp-popup.lp-below { transform: translate(-50%, 18px) scale(.96); }
-.lp-popup.lp-below.open { transform: translate(-50%, 22px); }
-.lp-popup-photo { height: 120px; border-radius: 12px; margin-bottom: 12px; overflow: hidden; background: linear-gradient(135deg, #1A2B45, #12203A); display: grid; place-items: center; }
-.lp-popup-photo img { width: 100%; height: 100%; object-fit: cover; }
-.lp-popup-photo svg { width: 120px; height: 72px; opacity: .65; }
-.lp-popup b { font-size: 15px; }
-.lp-popup p { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
-.lp-popup-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 12px; }
-.lp-popup-foot a { font-size: 13px; font-weight: 700; text-decoration: none; }
-.lp-tag { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
-
 /* 5. Closing + footer */
-.lp-closing { min-height: 90vh; display: flex; align-items: center; text-align: center; background: linear-gradient(180deg, transparent, var(--bg) 22%); }
+.lp-closing { pointer-events: auto; min-height: 90vh; display: flex; align-items: center; text-align: center; background: linear-gradient(180deg, transparent, var(--bg) 22%); }
 .lp-closing h2 { font-size: clamp(34px, 5vw, 70px); }
 .lp-journey { display: flex; justify-content: center; align-items: center; gap: 18px; flex-wrap: wrap; margin: 26px 0 36px; color: var(--muted); font-size: 18px; font-weight: 600; }
 .lp-journey i { font-style: normal; color: var(--accent); }
@@ -172,6 +197,10 @@
   .lp-story-progress { bottom: -8vh; }
   .lp-my { align-items: flex-end; padding-bottom: 8vh; min-height: 150vh; }
   .lp-my-copy { width: 100%; }
+  .lp-report { align-items: flex-end; padding-bottom: 6vh; min-height: 150vh; }
+  .lp-report-copy { width: 100%; }
+  .lp-rp { padding: 14px; }
+  .lp-rp-tabs button { flex-direction: column; gap: 4px; padding: 8px 2px; font-size: 12px; }
   .lp-rotate-hint { top: 18vh; bottom: auto; left: 50%; right: auto; transform: translateX(-50%); }
   .lp-map-panel { left: 16px; right: 16px; width: auto; top: auto; bottom: 16px; }
   .lp-recent { display: none; }
@@ -179,7 +208,7 @@
 }
 
 /* Reduced motion (system setting or Settings page): a calm, static page */
-.lp-reduced .lp-mouse::after, .lp-reduced .lp-pulse, .lp-reduced .lp-rotate-hint svg { animation: none; }
+.lp-reduced .lp-mouse::after, .lp-reduced .lp-rotate-hint svg, .lp-reduced .lp-rp-body { animation: none; }
 .lp-reduced .lp-story { height: auto; }
 .lp-reduced .lp-story-pin { position: relative; height: auto; padding: 18vh 0; }
 .lp-reduced .lp-story-steps { height: auto; display: flex; flex-direction: column; gap: 56px; }

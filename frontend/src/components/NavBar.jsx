@@ -29,19 +29,8 @@ export default function NavBar() {
     if (menuOpen && user) api("/sightings/points").then((d) => setPoints(d.points)).catch(() => {});
   }, [menuOpen, user]);
 
-  // "Edit" opens your scooter's edit page, or registration if you don't have one yet.
-  async function openEdit(e) {
-    e.preventDefault();
-    if (!user) return navigate("/login");
-    try {
-      const mine = await api("/scooters/mine");
-      navigate(mine.length ? `/scooters/${mine[0].id}/edit` : "/register-scooter");
-    } catch {
-      navigate("/my-scooters");
-    }
-  }
-
-  const scooterActive = pathname === "/my-scooters" || pathname === "/register-scooter" || (pathname.startsWith("/scooters/") && !pathname.endsWith("/edit"));
+  // Editing a scooter lives under My Scooter (scooter page → "Edit details"), so it stays highlighted there.
+  const scooterActive = pathname === "/my-scooters" || pathname === "/register-scooter" || pathname.startsWith("/scooters/");
   const linkClass = (active) => (active ? "active" : undefined);
 
   return (
@@ -56,8 +45,8 @@ export default function NavBar() {
       <nav className={`nav-links ${linksOpen ? "open" : ""}`} id="nav-links" aria-label="Main">
         <NavLink to="/my-scooters" className={() => linkClass(scooterActive)}>My Scooter</NavLink>
         <NavLink to="/submit-sighting" className={({ isActive }) => linkClass(isActive)}>Reporting</NavLink>
-        <a href="/edit" onClick={openEdit} className={linkClass(pathname.endsWith("/edit"))}>Edit</a>
         <NavLink to="/view-sightings" className={({ isActive }) => linkClass(isActive)}>Explore Map</NavLink>
+        <NavLink to="/matches" className={({ isActive }) => linkClass(isActive)}>Possible Matches</NavLink>
         <NavLink to="/settings" className={({ isActive }) => linkClass(isActive)}>Settings</NavLink>
       </nav>
 
@@ -85,7 +74,6 @@ export default function NavBar() {
                 {points !== null && <span className="points nav-points">🏆 {points} points</span>}
               </div>
               <Link to="/my-sightings" role="menuitem">My sightings</Link>
-              <Link to="/matches" role="menuitem">Possible matches</Link>
               <Link to="/settings" role="menuitem">Settings</Link>
               <button type="button" role="menuitem" className="nav-logout" onClick={async () => { await logout(); navigate("/"); }}>Log out</button>
             </div>

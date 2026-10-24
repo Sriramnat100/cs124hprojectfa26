@@ -11,7 +11,7 @@ const LOOK_Y = 0.95;
 const ROT0 = -0.5;                        // opening angle: a three-quarter view
 const TURN = Math.PI;
 const PROPS = ["rot", "scale", "xFrac", "yFrac", "camZ", "mapOpacity", "mapScale", "mapBlur", "mapTilt", "vignette", "sceneOpacity"];
-const STATIC = { rot: 0.95, scale: 0.75, xFrac: 0.42, yFrac: 0, camZ: 8, mapOpacity: 0.45, mapScale: 1.05, mapBlur: 2, mapTilt: 0, vignette: 0.8, sceneOpacity: 1 };
+const STATIC = { rot: 0.95, scale: 0.75, xFrac: 0.42, yFrac: 0, camZ: 8, mapOpacity: 0.45, mapScale: 1, mapBlur: 2, mapTilt: 0, vignette: 0.8, sceneOpacity: 1 };
 
 // ---- Scooter models -------------------------------------------------------
 function fit(object) {
@@ -99,19 +99,32 @@ const topOf = (el) => el.getBoundingClientRect().top + window.scrollY;
 function buildKeys(sections) {
   const desk = window.innerWidth > 900;
   const H = window.innerHeight;
-  const { story, my, map, closing } = sections;
+  const { story, my, report, map, closing } = sections;
   const hero = { rot: ROT0, scale: desk ? 0.82 : 0.7, xFrac: 0, yFrac: desk ? -0.31 : -0.3, camZ: 7, mapOpacity: 0.32, mapScale: 1.35, mapBlur: 3, mapTilt: 0, vignette: 1, sceneOpacity: 1 };
-  const storyEnd = { ...hero, rot: ROT0 + TURN * (desk ? 1.25 : 1), scale: desk ? 0.58 : 0.6, xFrac: desk ? 0.42 : 0, yFrac: desk ? 0 : 0.3, camZ: 9, mapOpacity: 0.9, mapScale: 1, mapBlur: 0, vignette: 0.55 };
+  // 1. end of the story: rotated, camera pulled back, map revealed, scooter on the right
+  const storyEnd = { ...hero, rot: ROT0 + TURN * (desk ? 1.25 : 1), scale: desk ? 0.58 : 0.6, xFrac: desk ? 0.42 : 0, yFrac: desk ? 0 : 0.3, camZ: 9, mapOpacity: 0.9, mapScale: 1.1, mapBlur: 0, vignette: 0.55 };
+  // 2. My Scooter: closer again, three-quarter view, map dimmed behind the copy
   const mine = { ...storyEnd, rot: ROT0 + TURN * 2, scale: desk ? 0.82 : 0.62, xFrac: desk ? 0.45 : 0, yFrac: desk ? 0 : 0.34, camZ: 8, mapOpacity: 0.32, mapBlur: 3, vignette: 0.95 };
-  const mapK = { ...mine, rot: ROT0 + TURN * 2.5, scale: 0.3, xFrac: desk ? 0.62 : 0.3, yFrac: desk ? -0.45 : 0.5, mapOpacity: 1, mapScale: desk ? 1.12 : 1.5, mapBlur: 0, mapTilt: desk ? 34 : 22, vignette: 0.3, sceneOpacity: 0 };
-  const end = { ...mapK, mapOpacity: 0.2, mapBlur: 5, mapTilt: 10, vignette: 1 };
-  const yMy = topOf(my) + my.offsetHeight / 2 - H / 2;
-  const yMap = topOf(map);
+  // 3. Report a sighting: a half turn, a little smaller, still on the right.
+  //    On phones the report text fills the screen, so the scooter fades out instead of covering it.
+  const rep = { ...mine, rot: ROT0 + TURN * 2.5, scale: desk ? 0.68 : 0.5, xFrac: desk ? 0.5 : 0, yFrac: desk ? -0.08 : 0.4, sceneOpacity: desk ? 1 : 0 };
+  // 4. Map: scooter steps back and fades; the real map settles flat (so it can be dragged)
+  const mapK = { ...rep, rot: ROT0 + TURN * 3, scale: 0.3, xFrac: desk ? 0.62 : 0.3, yFrac: desk ? -0.45 : 0.5, mapOpacity: 1, mapScale: 1, mapBlur: 0, mapTilt: 0, vignette: 0.12, sceneOpacity: 0 };
+  // 5. Closing: map softened behind the final message
+  const end = { ...mapK, mapOpacity: 0.2, mapBlur: 5, vignette: 1 };
+
+  const mid = (el) => topOf(el) + el.offsetHeight / 2 - H / 2;
+  const yMy = mid(my), yRep = mid(report), yMap = topOf(map);
+  // Phones: the scooter is fully visible as the section arrives, then gone before the heading reaches it.
+  const phoneFade = desk ? [] : [[yRep - H * 0.75, { ...rep, sceneOpacity: 1 }], [yRep - H * 0.3, rep]];
   return [
     [0, hero],
     [topOf(story) + story.offsetHeight - H, storyEnd],
     [yMy, mine],
-    [yMy + (yMap - yMy) * 0.65, { ...lerpAll(mine, mapK, 0.65), sceneOpacity: 1 }], // fade only near the map
+    ...phoneFade,
+    [yRep, rep],
+    // on the way to the map: tilted for depth, scooter still visible (desktop); then it lands flat
+    [yRep + (yMap - yRep) * 0.6, { ...lerpAll(rep, mapK, 0.6), mapTilt: desk ? 26 : 16, mapScale: 1.2, sceneOpacity: desk ? 1 : 0 }],
     [yMap, mapK],
     [topOf(closing) - H, mapK],
     [topOf(closing) - H * 0.3, end],
@@ -181,7 +194,7 @@ export function mountScooterScene({ canvas, root, sections, reducedMotion, canRo
   };
   const move = (e) => {
     if (!dragging) return;
-    dragVel = (e.clientX - lastX) * 0.008;
+    dragVel = Math.max(-0.06, Math.min(0.06, (e.clientX - lastX) * 0.008)); // capped so a fast flick doesn't spin wildly
     lastX = e.clientX;
     dragRot += dragVel;
   };
