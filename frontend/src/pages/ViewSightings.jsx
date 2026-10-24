@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api.js";
+import { useAuth } from "../AuthContext.jsx";
+import { loadSettings } from "../settings.js";
 import SightingSummary from "../sighting/SightingSummary.jsx";
 import SightingsMap from "../sighting/SightingsMap.jsx";
 import { BRANDS, COLORS, LANDMARKS } from "../sighting/constants.js";
@@ -17,7 +19,8 @@ const TIME_RANGES = [
 ];
 
 export default function ViewSightings() {
-  const [days, setDays] = useState("7");
+  const { user } = useAuth();
+  const [days, setDays] = useState(() => loadSettings(user).mapRange || "7"); // default from Settings
   const [brand, setBrand] = useState("");
   const [color, setColor] = useState("");
   const [landmark, setLandmark] = useState("");

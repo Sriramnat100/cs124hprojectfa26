@@ -7,15 +7,18 @@
   display: inline-block;
   text-align: center;
   font-weight: 600;
-  padding: 12px;
-  border-radius: 10px;
+  padding: 12px 18px;
+  border-radius: 999px;
   background: var(--accent);
-  color: white;
+  color: var(--accent-ink);
   text-decoration: none;
+  transition: transform .2s, box-shadow .2s;
 }
-.button.small { padding: 6px 12px; font-size: 0.9rem; }
+.button:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(60, 214, 196, 0.18); }
+.button.small { padding: 7px 14px; font-size: 0.9rem; }
 .secondary { background: var(--card); color: var(--ink); border: 1px solid var(--line); }
-.danger { background: #c62828; }
+.secondary:hover { border-color: rgba(60, 214, 196, 0.45); }
+.danger { background: var(--danger); color: white; }
 
 /* Photo picker and gallery */
 .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
@@ -38,6 +41,7 @@
   padding: 0;
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.6);
+  color: white;
   font-size: 0.8rem;
 }
 .photo.add {
@@ -76,7 +80,7 @@
   color: var(--muted);
   white-space: nowrap;
 }
-.badge.stolen { background: #c62828; border-color: #c62828; color: white; }
+.badge.stolen { background: rgba(229, 72, 77, 0.16); border-color: rgba(229, 72, 77, 0.5); color: #FF8A8A; }
 
 .empty { text-align: center; padding: 40px 0; }
 .empty .emoji { font-size: 3rem; }
@@ -91,8 +95,8 @@
   flex-direction: column;
   gap: 8px;
   padding: 14px;
-  border: 1px solid #c62828;
-  border-radius: 12px;
+  border: 1px solid rgba(229, 72, 77, 0.5);
+  border-radius: 14px;
   background: var(--card);
 }
 .confirm p { margin: 0 0 4px; font-weight: 600; }

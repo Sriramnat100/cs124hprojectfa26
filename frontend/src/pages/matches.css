@@ -26,7 +26,7 @@ code { font-size: 0.85em; background: var(--bg); padding: 1px 5px; border-radius
   align-items: center;
   gap: 12px;
   padding: 12px;
-  border: 1px solid #c62828;
+  border: 1px solid rgba(229, 72, 77, 0.5);
   border-radius: 14px;
   background: var(--card);
 }
@@ -45,7 +45,7 @@ code { font-size: 0.85em; background: var(--bg); padding: 1px 5px; border-radius
   border-radius: 12px;
   background: var(--card);
 }
-.match.tier-serial { border: 2px solid #2e7d32; }
+.match.tier-serial { border: 2px solid var(--success); }
 .match.tier-weak { opacity: 0.6; }
 .rank { font-weight: 700; color: var(--muted); width: 28px; flex: none; padding-top: 2px; }
 .match-body { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
@@ -55,23 +55,19 @@ code { font-size: 0.85em; background: var(--bg); padding: 1px 5px; border-radius
 .score { font-weight: 700; font-variant-numeric: tabular-nums; width: 2.2em; text-align: right; }
 .bar { flex: 1; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
 .bar div { height: 100%; background: var(--accent); }
-.tier-serial .bar div { background: #2e7d32; }
+.tier-serial .bar div { background: var(--success); }
 
 .tier { font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
-.tier.tier-serial { background: #2e7d32; color: white; }
-.tier.tier-strong { background: var(--accent); color: white; }
+.tier.tier-serial { background: var(--success); color: #06121F; }
+.tier.tier-strong { background: var(--accent); color: var(--accent-ink); }
 .tier.tier-possible { border: 1px solid var(--accent); color: var(--accent); }
 .tier.tier-weak { border: 1px solid var(--line); color: var(--muted); }
 
 .reasons { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
 .chip { font-size: 0.75rem; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
-.chip.good { border-color: #2e7d32; color: #2e7d32; }
-.chip.bad { border-color: #c62828; color: #c62828; }
+.chip.good { border-color: #66bb6a; color: #81c784; }
+.chip.bad { border-color: #ef5350; color: #ef9a9a; }
 .chip.words { border-style: dashed; }
 
-@media (prefers-color-scheme: dark) {
-  .chip.good { border-color: #66bb6a; color: #81c784; }
-  .chip.bad { border-color: #ef5350; color: #ef9a9a; }
-}
 
 .none, .hidden-count { margin: 8px 0 0 18px; font-size: 0.9rem; }
