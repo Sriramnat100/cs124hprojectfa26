@@ -28,9 +28,11 @@ export default function Login() {
   }
 
   return (
-    <main className="page narrow">
-      <h1>🛴 ScooterTrace</h1>
-      <p className="muted">Type anything to log in</p>
+    <main className="page auth">
+      <div className="auth-card">
+      <span className="auth-eyebrow">Welcome back</span>
+      <h1>Log in to ScooterTrace</h1>
+      <p className="muted">Type any email and password for now.</p>
 
       <form onSubmit={handleSubmit} className="form">
         <label>
@@ -42,8 +44,9 @@ export default function Login() {
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
         </label>
         {error && <p className="error">{error}</p>}
-        <button type="submit" disabled={busy}>Log in</button>
+        <button type="submit" disabled={busy}>{busy ? "Logging in…" : "Log in"}</button>
       </form>
+      </div>
     </main>
   );
 }

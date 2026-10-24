@@ -1,0 +1,69 @@
+.nav {
+  position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 1000;
+  width: min(1180px, calc(100% - 24px)); height: var(--nav-h);
+  display: flex; align-items: center; gap: 24px; padding: 0 10px 0 20px;
+  background: rgba(12, 20, 34, 0.58); border: 1px solid var(--line); border-radius: 20px;
+  backdrop-filter: blur(18px) saturate(1.4); -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.28);
+}
+.nav-brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; letter-spacing: -0.01em; color: var(--ink); text-decoration: none; white-space: nowrap; }
+.nav-mark { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; background: linear-gradient(140deg, #3CD6C4, #2A7FB8); }
+.nav-mark svg { width: 18px; height: 18px; }
+
+.nav-links { display: flex; gap: 2px; flex: 1; justify-content: center; }
+.nav-links a {
+  position: relative; padding: 9px 14px; border-radius: 12px;
+  font-size: 14.5px; font-weight: 600; color: var(--muted); text-decoration: none;
+  transition: color .25s, background .25s;
+}
+.nav-links a:hover { color: var(--ink); background: rgba(148, 178, 214, 0.08); }
+.nav-links a::after {
+  content: ""; position: absolute; left: 14px; right: 14px; bottom: 5px; height: 2px; border-radius: 2px;
+  background: var(--accent); transform: scaleX(0); transition: transform .3s cubic-bezier(.2,.8,.2,1);
+}
+.nav-links a:hover::after, .nav-links a.active::after { transform: scaleX(1); }
+.nav-links a.active { color: var(--ink); }
+
+.nav-right { position: relative; display: flex; align-items: center; gap: 8px; }
+.nav-avatar {
+  width: 40px; height: 40px; padding: 0; border-radius: 50%; border: 1px solid var(--line);
+  color: #06121F; font-weight: 800; font-size: 13.5px;
+}
+.nav-avatar:hover:not(:disabled), .nav-avatar[aria-expanded="true"] { transform: none; box-shadow: 0 0 0 3px rgba(60, 214, 196, 0.35); }
+.nav-login {
+  padding: 9px 18px; border-radius: 999px; font-weight: 700; font-size: 14.5px; text-decoration: none;
+  background: var(--ink); color: var(--bg); transition: transform .2s, box-shadow .2s;
+}
+.nav-login:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(60, 214, 196, 0.2); }
+
+.nav-menu {
+  position: absolute; right: 0; top: 52px; width: 240px; padding: 8px; border-radius: 16px;
+  background: rgba(14, 22, 38, 0.95); border: 1px solid var(--line); backdrop-filter: blur(18px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+  opacity: 0; transform: translateY(-6px) scale(.98); pointer-events: none; transition: opacity .2s, transform .2s;
+}
+.nav-menu.open { opacity: 1; transform: none; pointer-events: auto; }
+.nav-who { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px 12px; border-bottom: 1px solid var(--line); margin-bottom: 6px; }
+.nav-who b { font-size: 14.5px; }
+.nav-who span { font-size: 12.5px; color: var(--faint); overflow-wrap: anywhere; }
+.nav-who .nav-points { align-self: flex-start; margin-top: 8px; font-size: 12.5px; color: var(--amber); }
+.nav-menu a, .nav-logout {
+  display: block; width: 100%; text-align: left; padding: 9px 12px; border-radius: 10px;
+  font-size: 14px; font-weight: 500; color: var(--muted); text-decoration: none; background: transparent; border: 0;
+}
+.nav-menu a:hover, .nav-logout:hover:not(:disabled) { background: rgba(148, 178, 214, 0.08); color: var(--ink); transform: none; box-shadow: none; }
+
+.nav-burger { display: none; width: 40px; height: 40px; padding: 0; border-radius: 12px; border: 1px solid var(--line); background: transparent; }
+.nav-burger:hover:not(:disabled) { transform: none; box-shadow: none; background: rgba(148, 178, 214, 0.08); }
+.nav-burger span { display: block; width: 16px; height: 1.5px; background: var(--ink); margin: 4px auto; border-radius: 2px; }
+
+@media (max-width: 900px) {
+  .nav { gap: 10px; justify-content: space-between; }
+  .nav-burger { display: block; }
+  .nav-links { display: none; }
+  .nav-links.open {
+    display: flex; position: absolute; top: calc(var(--nav-h) + 8px); left: 0; right: 0; flex-direction: column;
+    padding: 8px; border-radius: 18px; background: rgba(14, 22, 38, 0.96); border: 1px solid var(--line); backdrop-filter: blur(18px);
+  }
+  .nav-links.open a { padding: 12px 14px; }
+}

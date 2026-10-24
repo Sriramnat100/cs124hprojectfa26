@@ -12,3 +12,6 @@ backend/uploads/
 # Frontend
 node_modules/
 dist/
+
+# 3D scooter model: kept local until its license is confirmed (see frontend/public/models/README.md)
+frontend/public/models/*.glb
