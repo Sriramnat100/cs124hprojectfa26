@@ -58,6 +58,7 @@ export default function NavBar() {
         <NavLink to="/submit-sighting" className={({ isActive }) => linkClass(isActive)}>Reporting</NavLink>
         <a href="/edit" onClick={openEdit} className={linkClass(pathname.endsWith("/edit"))}>Edit</a>
         <NavLink to="/view-sightings" className={({ isActive }) => linkClass(isActive)}>Explore Map</NavLink>
+        <NavLink to="/theft-map" className={({ isActive }) => linkClass(isActive)}>Theft Map</NavLink>
         <NavLink to="/settings" className={({ isActive }) => linkClass(isActive)}>Settings</NavLink>
       </nav>
 

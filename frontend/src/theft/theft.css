@@ -1,0 +1,90 @@
+/* Theft Risk Map page */
+
+.theft-page { max-width: 1100px; margin: 0 auto; }
+.theft-page h1 { margin-bottom: 4px; }
+
+.theft-controls { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; margin: 16px 0 8px; }
+.theft-controls label { display: flex; flex-direction: column; gap: 4px; font-weight: 600; font-size: 0.9rem; }
+
+.theft-toggle { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.theft-toggle button { background: var(--card); color: var(--ink); border-radius: 0; padding: 9px 14px; font-weight: 600; }
+.theft-toggle button.on { background: var(--accent); color: white; }
+
+.theft-stats { margin: 8px 0 12px; }
+
+.theft-grid { display: grid; grid-template-columns: 1fr 320px; gap: 16px; align-items: start; }
+.theft-grid > * { min-width: 0; } /* let long hotspot names truncate instead of widening the page */
+.theft-map { height: 600px; border-radius: 14px; border: 1px solid var(--line); z-index: 0; }
+
+.theft-side h2 { font-size: 1.1rem; margin: 0 0 8px; }
+.theft-hotspots { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.theft-hotspots button {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+  padding: 8px 10px;
+  background: var(--card);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  font-weight: 400;
+}
+.theft-hotspots button.on, .theft-hotspots button:hover { border-color: #b91c1c; }
+.theft-hotspots button > span:last-child { display: flex; flex-direction: column; min-width: 0; }
+.theft-hotspots b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.theft-badge {
+  flex: none;
+  min-width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #b91c1c;
+  color: white;
+  font-weight: 700;
+}
+
+.theft-detail { margin-top: 10px; padding: 12px; border: 1px solid #b91c1c; border-radius: 12px; background: var(--card); }
+
+.theft-legend { display: flex; align-items: center; gap: 8px; margin-top: 16px; font-size: 0.85rem; color: var(--muted); }
+.theft-gradient { width: 90px; height: 10px; border-radius: 5px; background: linear-gradient(90deg, #fde047, #fb923c, #ef4444, #7f1d1d); }
+.theft-note { font-size: 0.8rem; margin-top: 10px; }
+
+/* Popups and summary text */
+.theft-summary { display: flex; flex-direction: column; gap: 3px; }
+.theft-summary ol { margin: 2px 0 4px; padding-left: 18px; }
+.theft-sublabel { margin-top: 4px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+/* Leaflet popups are always white, so keep their text dark in dark mode too. */
+.theft-map .leaflet-popup-content { margin: 12px; color: #1d1d1f; font-size: 0.9rem; }
+.theft-map .leaflet-popup-content .muted,
+.theft-map .leaflet-popup-content .theft-sublabel { color: #5c5f66; }
+
+/* Count label in the middle of each hotspot circle */
+.leaflet-tooltip.theft-count {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: #450a0a;
+  font-weight: 800;
+  font-size: 0.85rem;
+  text-shadow: 0 0 3px #fff, 0 0 3px #fff;
+}
+.leaflet-tooltip.theft-count::before { display: none; }
+
+/* Red dot pins */
+.theft-pin span {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #dc2626;
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+@media (max-width: 760px) {
+  .theft-grid { grid-template-columns: 1fr; }
+  .theft-map { height: 380px; }
+}

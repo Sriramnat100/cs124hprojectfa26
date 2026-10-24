@@ -10,6 +10,7 @@ import RegisterScooter from "./pages/RegisterScooter.jsx";
 import ScooterDetail from "./pages/ScooterDetail.jsx";
 import Settings from "./pages/Settings.jsx";
 import SubmitSighting from "./pages/SubmitSighting.jsx";
+import TheftMap from "./pages/TheftMap.jsx";
 import ViewSightings from "./pages/ViewSightings.jsx";
 
 // The 3D home page loads three.js, so it's only downloaded when you visit it.
@@ -38,6 +39,7 @@ export default function App() {
         <Route path="/my-sightings" element={<RequireLogin><MySightings /></RequireLogin>} />
         <Route path="/view-sightings" element={<RequireLogin><ViewSightings /></RequireLogin>} />
         <Route path="/matches" element={<RequireLogin><Matches /></RequireLogin>} />
+        <Route path="/theft-map" element={<RequireLogin><TheftMap /></RequireLogin>} />
         <Route path="/settings" element={<RequireLogin><Settings /></RequireLogin>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
