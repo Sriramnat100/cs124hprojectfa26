@@ -2,9 +2,9 @@
 
 Deliberately simple and free (no APIs, no ML libraries):
 
-1. Serial number: if the stolen scooter's serial appears in the sighting's
-   notes (ignoring dashes, spaces and case), it's a "serial" match and always
-   ranks first.
+1. Serial number: if the stolen scooter's serial appears in the serial the
+   spotter typed or in their notes (ignoring dashes, spaces and case), it's a
+   "serial" match and always ranks first.
 2. Otherwise a 0-99 score from three parts:
    - brand:  +25 same, -20 different, 0 if the spotter wasn't sure
    - color:  +25 same, -20 different, 0 if the spotter wasn't sure
@@ -107,7 +107,9 @@ def compare(scooter, sighting, index):
     reasons = []
 
     serial = normalize_serial(scooter.get("serial_number"))
-    if len(serial) >= 5 and serial in normalize_serial(sighting.get("notes")):
+    # Checked separately so the end of one field and the start of the other can't combine into a serial.
+    seen = [normalize_serial(sighting.get(field)) for field in ("serial_number", "notes")]
+    if len(serial) >= 5 and any(serial in text for text in seen):
         return {"score": 100, "tier": "serial", "reasons": ["Serial number matches"], "shared_words": []}
 
     score = 0

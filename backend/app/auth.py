@@ -17,6 +17,10 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 ALLOWED_DOMAIN = "@illinois.edu"
 MIN_PASSWORD_LENGTH = 8
+SESSION_DAYS = 30  # after this you have to log in again
+
+# For SQLite's datetime(): sessions created before datetime('now', SESSION_AGE) have expired.
+SESSION_AGE = f"-{SESSION_DAYS} days"
 
 
 def init_tables():
@@ -48,6 +52,7 @@ def hash_password(password, salt):
 
 def start_session(db, user_id):
     token = secrets.token_urlsafe(32)
+    db.execute("DELETE FROM sessions WHERE created_at < datetime('now', ?)", (SESSION_AGE,))  # tidy up expired ones
     db.execute("INSERT INTO sessions (token, user_id) VALUES (?, ?)", (token, user_id))
     db.commit()
     return token
@@ -76,21 +81,15 @@ def signup(creds: Credentials, db: sqlite3.Connection = Depends(get_db)):
 
 @router.post("/login")
 def login(creds: Credentials, db: sqlite3.Connection = Depends(get_db)):
-    # TEMPORARY: accepts any email and any password. If the email is new,
-    # an account is created for it. Password checking is turned off.
-    email = creds.email.strip().lower() or "guest"
-    row = db.execute("SELECT id FROM users WHERE email = ?", (email,)).fetchone()
-    if row is None:
-        salt = secrets.token_hex(16)
-        user_id = db.execute(
-            "INSERT INTO users (email, password_hash, salt) VALUES (?, ?, ?)",
-            (email, hash_password(creds.password, salt), salt),
-        ).lastrowid
-    else:
-        user_id = row["id"]
+    email = creds.email.strip().lower()
+    row = db.execute("SELECT id, password_hash, salt FROM users WHERE email = ?", (email,)).fetchone()
+    # Same message for an unknown email and a wrong password, so it doesn't say which one was wrong.
+    # compare_digest takes the same time however much of the hash matches.
+    if row is None or not secrets.compare_digest(hash_password(creds.password, row["salt"]), row["password_hash"]):
+        raise HTTPException(401, "Wrong email or password")
 
-    token = start_session(db, user_id)
-    return {"token": token, "user": {"id": user_id, "email": email}}
+    token = start_session(db, row["id"])
+    return {"token": token, "user": {"id": row["id"], "email": email}}
 
 
 def get_token(authorization: str | None = Header(None)):
@@ -102,8 +101,8 @@ def get_token(authorization: str | None = Header(None)):
 def get_current_user(token: str = Depends(get_token), db: sqlite3.Connection = Depends(get_db)):
     row = db.execute(
         "SELECT users.id, users.email FROM sessions JOIN users ON users.id = sessions.user_id "
-        "WHERE sessions.token = ?",
-        (token,),
+        "WHERE sessions.token = ? AND sessions.created_at >= datetime('now', ?)",
+        (token, SESSION_AGE),
     ).fetchone()
     if row is None:
         raise HTTPException(401, "Not logged in")

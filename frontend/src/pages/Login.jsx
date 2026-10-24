@@ -2,10 +2,11 @@ import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext.jsx";
 
-// TEMPORARY: any email and password work. The backend creates the account if it's new.
+// Log in, or create an account with an @illinois.edu email (the backend checks both).
 export default function Login() {
-  const { user, login } = useAuth();
+  const { user, login, signup } = useAuth();
   const navigate = useNavigate();
+  const [creating, setCreating] = useState(false); // false: log in, true: create an account
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -18,7 +19,7 @@ export default function Login() {
     setError("");
     setBusy(true);
     try {
-      await login(email, password);
+      await (creating ? signup : login)(email, password);
       navigate("/");
     } catch (err) {
       setError(err.message);
@@ -27,25 +28,51 @@ export default function Login() {
     }
   }
 
+  function switchMode() {
+    setCreating(!creating);
+    setError("");
+  }
+
   return (
     <main className="page auth">
       <div className="auth-card">
-      <span className="auth-eyebrow">Welcome back</span>
-      <h1>Log in to ScooterTrace</h1>
-      <p className="muted">Type any email and password for now.</p>
+      <span className="auth-eyebrow">{creating ? "Join ScooterTrace" : "Welcome back"}</span>
+      <h1>{creating ? "Create your account" : "Log in to ScooterTrace"}</h1>
+      <p className="muted">{creating ? "Use your @illinois.edu email" : "Log in to report and track scooters"}</p>
 
       <form onSubmit={handleSubmit} className="form">
         <label>
           Email
-          <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="netid@illinois.edu" />
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="netid@illinois.edu"
+            autoComplete="username"
+            required
+          />
         </label>
         <label>
           Password
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder={creating ? "At least 8 characters" : ""}
+            autoComplete={creating ? "new-password" : "current-password"}
+            required
+          />
         </label>
         {error && <p className="error">{error}</p>}
-        <button type="submit" disabled={busy}>{busy ? "Logging in…" : "Log in"}</button>
+        <button type="submit" disabled={busy}>
+          {busy ? (creating ? "Creating account…" : "Logging in…") : creating ? "Create account" : "Log in"}
+        </button>
       </form>
+
+      <p className="muted">
+        {creating ? "Already have an account? " : "New here? "}
+        <button type="button" className="link" onClick={switchMode}>{creating ? "Log in" : "Create an account"}</button>
+      </p>
       </div>
     </main>
   );

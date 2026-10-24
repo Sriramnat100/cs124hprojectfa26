@@ -9,8 +9,10 @@ accounts whose email starts with "demo-", so your own data is left alone.
 """
 
 import json
+import secrets
 from datetime import datetime, timedelta, timezone
 
+from .auth import hash_password
 from .db import connect
 from .main import app  # noqa: F401  (importing creates any missing tables)
 
@@ -31,6 +33,7 @@ def iso_time(dt):  # how sightings.seen_at is stored
 
 OWNERS = ["demo-owner-1@illinois.edu", "demo-owner-2@illinois.edu", "demo-owner-3@illinois.edu"]
 SPOTTER = "demo-spotter@illinois.edu"
+DEMO_PASSWORD = "demo-password"  # every demo account uses it; they only exist in your local database
 
 # (owner index, brand, model, color, serial, marks, stolen how long ago or None if not stolen)
 SCOOTERS = [
@@ -94,9 +97,10 @@ LANDMARKS = {
 
 
 def make_user(db, email):
-    # Login is "any password" for now, so the hash doesn't matter.
+    salt = secrets.token_hex(16)
     return db.execute(
-        "INSERT INTO users (email, password_hash, salt) VALUES (?, 'demo', '00')", (email,)
+        "INSERT INTO users (email, password_hash, salt) VALUES (?, ?, ?)",
+        (email, hash_password(DEMO_PASSWORD, salt), salt),
     ).lastrowid
 
 
@@ -130,7 +134,9 @@ def main():
     db.close()
     print(f"Removed {deleted} old demo accounts. Added {len(SCOOTERS)} scooters "
           f"({sum(1 for s in SCOOTERS if s[-1])} stolen) and {len(SIGHTINGS)} sightings.")
-    print("Open the Matches page to see the ranking.")
+    # Matches only shows your own stolen scooters, so log in as an owner to see them.
+    print(f"Log in as {OWNERS[0]} (or owner-2, owner-3) with password {DEMO_PASSWORD!r},")
+    print("then open the Possible matches page to see the ranking.")
 
 
 if __name__ == "__main__":

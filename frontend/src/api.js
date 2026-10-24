@@ -32,6 +32,11 @@ export async function api(path, { method = "GET", body } = {}) {
     // Vite answers with an empty 500 when the backend isn't running.
     throw new Error("Can't reach the backend. Is uvicorn running in another terminal?");
   }
+  if (res.status === 401 && token) {
+    // The session expired (or was logged out elsewhere): forget it and log in again.
+    setToken(null);
+    window.location.assign("/login");
+  }
   if (!res.ok) throw new Error(data?.detail ?? `Request failed (${res.status})`);
   return data;
 }
